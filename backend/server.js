@@ -14,3 +14,12 @@ app.use("/api/auth", authRoutes);
 app.listen(3000, () => {
   console.log("Server läuft auf http://localhost:3000");
 });
+
+const auth = require("./middleware/auth.middleware");
+
+app.get("/api/protected", auth, (req, res) => {
+  res.json({
+    message: "OK",
+    user: req.user
+  });
+});
