@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -49,6 +50,10 @@ export default function Login() {
                 />
                 <button type="submit">Login</button>
             </form>
+
+            <p>
+                New to Dampf? <Link to="/register">Create account</Link>
+            </p>
             {error && <p>{error}</p>}
         </div>
     );
