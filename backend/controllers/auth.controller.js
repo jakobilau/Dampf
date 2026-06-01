@@ -38,15 +38,26 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
-  const hashed_password = await bcrypt.hash(password, saltRounds);
-
   const [rows] = await db.query(
-    "SELECT * FROM users WHERE username = ? AND password_hash = ?",
-    [username, hashed_password]
+    "SELECT * FROM users WHERE username = ?",
+    [username]
   );
 
   if (rows.length === 0) {
     return res.status(401).json({ error: "Invalid login" });
+  }
+
+  const user = rows[0];
+
+  const validPassword = await bcrypt.compare(
+    password,
+    user.password_hashed
+  );
+
+  if (!validPassword) {
+    return res.status(401).json({
+      message: "Invalid Login"
+    });
   }
 
   const token = jwt.sign(
