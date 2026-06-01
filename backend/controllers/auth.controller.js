@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
 
   const validPassword = await bcrypt.compare(
     password,
-    user.password_hashed
+    user.password_hash
   );
 
   if (!validPassword) {
