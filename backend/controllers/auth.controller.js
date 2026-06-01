@@ -38,10 +38,11 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
+  const hashed_password = await bcrypt.hash(password, saltRounds);
 
   const [rows] = await db.query(
     "SELECT * FROM users WHERE username = ? AND password_hash = ?",
-    [username, password]
+    [username, hashed_password]
   );
 
   if (rows.length === 0) {
