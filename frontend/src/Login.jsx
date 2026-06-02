@@ -35,28 +35,30 @@ export default function Login() {
     }
 
     return (
-        <div>
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Passwort"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Login</button>
-            </form>
+        <div className="form-wrapper">
+            <div className="form-container">
+                <h2>Login</h2>
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Passwort"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button className="submit-button" type="submit">Login</button>
+                </form>
 
-            <p>
-                New to Dampf? <Link to="/register">Create account</Link>
-            </p>
-            {error && <p>{error}</p>}
+                <p>
+                    New to Dampf? <Link to="/register">Create account</Link>
+                </p>
+                {error && <p className="error-msg">{error}</p>}
+            </div>
         </div>
     );
 }
