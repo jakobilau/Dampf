@@ -6,7 +6,10 @@
     font-family: "Poppins", sans-serif;
 }
 
-body {}
+body {
+        background-color: rgb(26, 26, 65);
+        color: white
+}
 
 .form-container {
     border-radius: 0.4em;
