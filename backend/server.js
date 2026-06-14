@@ -12,7 +12,7 @@ const authRoutes = require("./routes/auth.routes");
 app.use("/api/auth", authRoutes);
 
 app.listen(3000, () => {
-  console.log("Server läuft auf http://localhost:3000");
+  console.log("Express Backend running");
 });
 
 const auth = require("./middleware/auth.middleware");
