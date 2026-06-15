@@ -32,39 +32,98 @@ exports.register = async (req, res) => {
   }
 };
 
-
-
-
+// LOGIN
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  const [rows] = await db.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username]
-  );
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "Missing credentials",
+      });
+    }
 
-  if (rows.length === 0) {
-    return res.status(401).json({ error: "Invalid login" });
-  }
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE username = ?",
+      [username]
+    );
 
-  const user = rows[0];
+    if (rows.length === 0) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
+    }
 
-  const validPassword = await bcrypt.compare(
-    password,
-    user.password_hash
-  );
+    const user = rows[0];
 
-  if (!validPassword) {
-    return res.status(401).json({
-      message: "Invalid Login"
+    const validPassword = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    if (!validPassword) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.user_id,
+        username: user.username,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // 💥 FIXED COOKIE (WICHTIG)
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // später true bei HTTPS
+      sameSite: "lax",
+      path: "/", // 🔥 WICHTIGER FIX
+      maxAge: 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      user: {
+        id: user.user_id,
+        username: user.username,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+
+    return res.status(500).json({
+      message: "Server error",
     });
   }
+};
 
-  const token = jwt.sign(
-    { id: user.user_id, username },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+// ME
+exports.me = async (req, res) => {
+  try {
+    console.log("User ID from token:", req.user.id);
+    console.log("vor qwewy");
+    const [rows] = await db.query(
+       "SELECT user_id, username, email, role FROM users WHERE user_id = ? ",
+      [req.user.id]
+    );
+    console.log("nach qwewy");
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-  res.json({ token });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
 };
