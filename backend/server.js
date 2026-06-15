@@ -28,3 +28,8 @@ const messageRoutes = require("./routes/messages.routes");
 
 app.use("/api/messages", messageRoutes);
 
+
+const friendRoutes = require("./routes/friends.routes");
+
+app.use("/api/friends", friendRoutes);
+

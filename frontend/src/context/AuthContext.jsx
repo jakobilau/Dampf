@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
   const login = async (username, password) => {
     const res = await apiFetch("/api/auth/login", {
       method: "POST",
-      credentials: "include", // 🔥 WICHTIG
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
 
     await loadUser();
   };
-  
+
   const logout = async () => {
     try {
       await apiFetch("/api/auth/logout", {
