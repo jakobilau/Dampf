@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 
 const saltRounds = 10;
 
-// REGISTER
 exports.register = async (req, res) => {
   const { username, password, email } = req.body;
 
@@ -32,7 +31,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// LOGIN
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -77,12 +75,11 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    // 💥 FIXED COOKIE (WICHTIG)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // später true bei HTTPS
+      secure: false,
       sameSite: "lax",
-      path: "/", // 🔥 WICHTIGER FIX
+      path: "/",
       maxAge: 60 * 60 * 1000,
     });
 
@@ -102,16 +99,12 @@ exports.login = async (req, res) => {
   }
 };
 
-// ME
 exports.me = async (req, res) => {
   try {
-    console.log("User ID from token:", req.user.id);
-    console.log("vor qwewy");
     const [rows] = await db.query(
        "SELECT user_id, username, email, role FROM users WHERE user_id = ? ",
       [req.user.id]
     );
-    console.log("nach qwewy");
     if (rows.length === 0) {
       return res.status(404).json({
         message: "User not found",
