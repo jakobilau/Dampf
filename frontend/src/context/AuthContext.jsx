@@ -27,10 +27,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 07b97f21bb8f6118d29752ef1002fd22e8348182
   const login = async (username, password) => {
     const res = await apiFetch("/api/auth/login", {
       method: "POST",
@@ -48,11 +44,6 @@ export function AuthProvider({ children }) {
 
     await loadUser();
   };
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> 07b97f21bb8f6118d29752ef1002fd22e8348182
   const logout = async () => {
     try {
       await apiFetch("/api/auth/logout", {

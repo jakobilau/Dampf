@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./LibraryPage.css";
 
 /* ---------------- DATA ---------------- */
 
-const friends = [
-    { id: 1, name: "Max" },
-    { id: 2, name: "Anna" },
-    { id: 3, name: "Tom" },
-];
+const friends = [];
 
 const allUsers = [
     { id: 101, name: "John Doe" },
@@ -32,9 +28,13 @@ const storeGames = [
 export default function LibraryPage() {
     const [activeTab, setActiveTab] = useState("library");
 
+
+
     /* FRIENDS STATES */
     const [addFriendMode, setAddFriendMode] = useState(false);
     const [friendQuery, setFriendQuery] = useState("");
+    const [friendList, setFriendList] = useState([]);
+
 
     /* CHAT STATE */
     const [activeChatUser, setActiveChatUser] = useState(null);
@@ -43,6 +43,7 @@ export default function LibraryPage() {
 
     /* STORE SEARCH */
     const [storeQuery, setStoreQuery] = useState("");
+
 
     const games =
         activeTab === "library"
@@ -103,7 +104,18 @@ export default function LibraryPage() {
         setActiveChatUser(null);
     };
 
-    /* ---------------- RENDER ---------------- */
+    useEffect(() => {
+        async function fetchFriends() {
+            try {
+                const res = await fetch("api/friends");
+                const data = await res.json();
+                setFriendList(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        fetchFriends();
+    }, []);
 
     return (
         <div className="layout">
@@ -167,7 +179,7 @@ export default function LibraryPage() {
                         {/* LIST */}
                         {!addFriendMode && (
                             <ul className="friends-list">
-                                {friends.map(f => (
+                                {friendList.map(f => (
                                     <li
                                         key={f.id}
                                         className="friend-item"
