@@ -19,9 +19,7 @@ app.listen(3000, () => {
 
 const auth = require("./middleware/auth.middleware");
 
-app.get("/api/protected", auth, (req, res) => {
-  res.json({
-    message: "OK",
-    user: req.user
-  });
-});
+const userRoutes = require("./routes/user.routes");
+
+app.use("/api", userRoutes);
+

@@ -15,7 +15,7 @@ export default function Login() {
     setError("");
 
     try {
-      await login(username, password); // 🔥 EINZIGER FLOW
+      await login(username, password);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.message);
