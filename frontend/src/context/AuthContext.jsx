@@ -7,7 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 USER LADEN (/me)
   const loadUser = async () => {
     try {
       const res = await apiFetch("/api/auth/me", {
@@ -28,11 +27,11 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 🔥 LOGIN (COOKIE FLOW)
+
   const login = async (username, password) => {
     const res = await apiFetch("/api/auth/login", {
       method: "POST",
-      credentials: "include", // 🔥 WICHTIG
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -44,23 +43,22 @@ export function AuthProvider({ children }) {
       throw new Error(err.message || "login failed");
     }
 
-    // 🔥 danach user state syncen
     await loadUser();
   };
 
-  // 🔥 LOGOUT
   const logout = async () => {
     try {
       await apiFetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
-    } catch {}
+    } catch (err) {
+      console.error()
+    }
 
     setUser(null);
   };
 
-  // 🔥 INITIAL AUTH CHECK
   useEffect(() => {
     loadUser();
   }, []);
