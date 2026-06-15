@@ -23,3 +23,8 @@ const userRoutes = require("./routes/user.routes");
 
 app.use("/api", userRoutes);
 
+
+const messageRoutes = require("./routes/messages.routes");
+
+app.use("/api/messages", messageRoutes);
+
