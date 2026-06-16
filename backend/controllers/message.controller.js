@@ -1,4 +1,5 @@
 const db = require("../db");
+const socketModule = require("../sockets");
 
 exports.getMessages = async (req, res) => {
   try {
@@ -19,6 +20,45 @@ exports.getMessages = async (req, res) => {
     );
 
     res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.sendMessage = async (req, res) => {
+  try {
+    const senderId = req.user.id;
+    const { receiverId, content } = req.body;
+
+    const [result] = await db.query(
+      `INSERT INTO messages (sender_id, receiver_id, content)
+       VALUES (?, ?, ?)`,
+      [senderId, receiverId, content]
+    );
+
+    const message = {
+      id: result.insertId,
+      senderId,
+      receiverId,
+      content,
+    };
+
+    const onlineUsers = socketModule.getOnlineUsers();
+    const io = socketModule.getIO();
+
+    if (!onlineUsers || !io) {
+      return res.json(message);
+    }
+
+    const receiverSocket = onlineUsers.get(receiverId);
+
+    if (receiverSocket) {
+      io.to(receiverSocket).emit("new_message", message);
+    }
+
+    res.json(message);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
