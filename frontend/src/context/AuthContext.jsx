@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { apiFetch } from "../api/apiFetch";
+import { socket } from "../socket/index";
 
 const AuthContext = createContext();
 
@@ -19,7 +20,16 @@ export function AuthProvider({ children }) {
       }
 
       const data = await res.json();
+
       setUser(data);
+
+      // Socket registrieren
+      if (!socket.connected) {
+        socket.connect();
+      }
+
+      socket.emit("register", data.user_id);
+
     } catch (err) {
       setUser(null);
     } finally {
@@ -54,11 +64,23 @@ export function AuthProvider({ children }) {
       console.error()
     }
 
+    socket.disconnect();
     setUser(null);
   };
 
   useEffect(() => {
     loadUser();
+  }, []);
+
+  // Test Listener
+  useEffect(() => {
+    socket.on("new_message", (data) => {
+      console.log("Neue Nachricht:", data);
+    });
+
+    return () => {
+      socket.off("new_message");
+    };
   }, []);
 
   return (
