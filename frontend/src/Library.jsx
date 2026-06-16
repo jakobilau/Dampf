@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { subscribeToMessages } from "./context/AuthContext";
 import "./LibraryPage.css";
 
 /* ---------------- DATA ---------------- */
@@ -27,8 +28,10 @@ const storeGames = [
 
 export default function LibraryPage() {
     const [activeTab, setActiveTab] = useState("library");
-
-
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [searchSubmitted, setSearchSubmitted] = useState(false);
+    const [sentRequests, setSentRequests] = useState([]);
+    const [searchResults, setSearchResults] = useState([]);
 
     /* FRIENDS STATES */
     const [addFriendMode, setAddFriendMode] = useState(false);
@@ -44,6 +47,54 @@ export default function LibraryPage() {
     /* STORE SEARCH */
     const [storeQuery, setStoreQuery] = useState("");
 
+    const activeChatRef = useRef(null);
+
+    useEffect(() => {
+        activeChatRef.current = activeChatUser;
+    }, [activeChatUser]);
+
+    useEffect(() => {
+        const unsubscribe = subscribeToMessages((msg) => {
+            if (!currentUserId) return;
+
+            const otherUserId =
+                msg.sender_id === currentUserId
+                    ? msg.receiver_id
+                    : msg.sender_id;
+
+            /* const active = activeChatRef.current;
+ 
+             if (active?.user_id !== otherUserId) return;*/
+
+            setMessages((prev) => ({
+                ...prev,
+                [otherUserId]: [
+                    ...(prev[otherUserId] || []),
+                    {
+                        ...msg,
+                        fromMe: msg.sender_id === currentUserId,
+                    },
+                ],
+            }));
+        });
+
+        return unsubscribe;
+    }, [currentUserId]);
+
+    useEffect(() => {
+        async function fetchCurrentUser() {
+            try {
+                const res = await fetch("/api/auth/me");
+                const data = await res.json();
+
+                setCurrentUserId(data.user_id);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        fetchCurrentUser();
+    }, []);
 
     const games =
         activeTab === "library"
@@ -54,15 +105,26 @@ export default function LibraryPage() {
 
     /* ---------------- FRIEND SEARCH ---------------- */
 
-    const filteredUsers = allUsers.filter(u =>
-        u.name.toLowerCase().includes(friendQuery.toLowerCase())
-    );
+    const filteredUsers = searchResults;
 
     const enterPressed = (e) => e.key === "Enter";
 
-    const handleFriendSearchKey = (e) => {
-        if (enterPressed(e)) {
-            console.log("Friend search:", friendQuery);
+    const sendFriendRequest = (user) => {
+        setSentRequests(prev => [...prev, user.id]);
+        console.log("Friend request sent to:", user.name);
+    };
+
+    const handleFriendSearchKey = async (e) => {
+        if (e.key !== "Enter") return;
+
+        try {
+            const res = await fetch(`/api/friends/search?query=${friendQuery}`);
+            const data = await res.json();
+
+            setSearchResults(data);
+            setSearchSubmitted(true);
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -74,30 +136,69 @@ export default function LibraryPage() {
 
     /* ---------------- CHAT ---------------- */
 
-    const openChat = (user) => {
+    const openChat = async (user) => {
         setActiveChatUser(user);
-        if (!messages[user.id]) {
+
+        try {
+            const resMsg = await fetch(`/api/messages/${user.user_id}`);
+            const dataMsg = await resMsg.json();
+            const formatted = dataMsg.map(m => ({
+                ...m,
+                fromMe: m.sender_id === currentUserId
+            }));
+
             setMessages(prev => ({
                 ...prev,
-                [user.id]: []
+                [user.user_id]: formatted
             }));
+        } catch (err) {
+            console.error(err);
         }
     };
 
-    const sendMessage = () => {
-        if (!chatInput.trim()) return;
+    const sendMessage = async () => {
+        const content = chatInput.trim();
 
-        const id = activeChatUser.id;
+        if (!content) return;
 
-        setMessages(prev => ({
-            ...prev,
-            [id]: [
-                ...(prev[id] || []),
-                { text: chatInput, fromMe: true }
-            ]
-        }));
+        try {
+            const res = await fetch("/api/messages", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    receiverId: activeChatUser.user_id,
+                    content
+                })
+            });
 
-        setChatInput("");
+            if (!res.ok) {
+                throw new Error("Failed to send message");
+            }
+
+            const newMessage = {
+                message_id: Date.now(),
+                sender_id: currentUserId,
+                receiver_id: activeChatUser.user_id,
+                content,
+                created_at: new Date().toISOString(),
+                fromMe: true
+            };
+
+            setMessages(prev => ({
+                ...prev,
+                [activeChatUser.user_id]: [
+                    ...(prev[activeChatUser.user_id] || []),
+                    newMessage
+                ]
+            }));
+
+            setChatInput("");
+        }
+        catch (err) {
+            console.error(err);
+        }
     };
 
     const goBackToFriends = () => {
@@ -107,8 +208,9 @@ export default function LibraryPage() {
     useEffect(() => {
         async function fetchFriends() {
             try {
-                const res = await fetch("api/friends");
+                const res = await fetch("/api/friends");
                 const data = await res.json();
+                console.log(data);
                 setFriendList(data);
             } catch (err) {
                 console.error(err);
@@ -136,12 +238,12 @@ export default function LibraryPage() {
                         </div>
 
                         <div className="chat-messages">
-                            {(messages[activeChatUser.id] || []).map((m, i) => (
+                            {(messages[activeChatUser.user_id] || []).map((m, i) => (
                                 <div
                                     key={i}
                                     className={`msg ${m.fromMe ? "me" : ""}`}
                                 >
-                                    {m.text}
+                                    {m.content}
                                 </div>
                             ))}
                         </div>
@@ -170,7 +272,11 @@ export default function LibraryPage() {
 
                             <button
                                 className={`add-btn ${addFriendMode ? "active" : ""}`}
-                                onClick={() => setAddFriendMode(p => !p)}
+                                onClick={() => {
+                                    setAddFriendMode(p => !p);
+                                    setSearchSubmitted(false);
+                                    setFriendQuery("");
+                                }}
                             >
                                 +
                             </button>
@@ -181,11 +287,11 @@ export default function LibraryPage() {
                             <ul className="friends-list">
                                 {friendList.map(f => (
                                     <li
-                                        key={f.id}
+                                        key={f.user_id}
                                         className="friend-item"
                                         onClick={() => openChat(f)}
                                     >
-                                        {f.name}
+                                        {f.username}
                                     </li>
                                 ))}
                             </ul>
@@ -194,25 +300,53 @@ export default function LibraryPage() {
                         {/* SEARCH USERS */}
                         {addFriendMode && (
                             <div className="add-friend-view">
-
+                                <div className="friend-search-header">
+                                    <button
+                                        className="back-btn"
+                                        onClick={() => {
+                                            setAddFriendMode(false);
+                                            setSearchSubmitted(false);
+                                            setSearchResults([]);
+                                            setFriendQuery("");
+                                        }}
+                                    >
+                                        ← Zurück
+                                    </button>
+                                </div>
                                 <input
                                     className="friend-search"
                                     value={friendQuery}
-                                    onChange={(e) => setFriendQuery(e.target.value)}
+                                    onChange={(e) => {
+                                        setFriendQuery(e.target.value);
+                                        setSearchSubmitted(false);
+                                    }}
                                     onKeyDown={handleFriendSearchKey}
                                     placeholder="User suchen..."
                                     autoFocus
                                 />
 
                                 <div className="search-results">
-                                    {filteredUsers.map(u => (
+
+                                    {searchResults.length === 0 && (
+                                        <p style={{ color: "#888" }}>
+                                            Keine Nutzer gefunden
+                                        </p>
+                                    )}
+
+                                    {searchResults.map(u => (
                                         <div key={u.id} className="user-item">
-                                            <span>{u.name}</span>
-                                            <button>Add</button>
+                                            <span>{u.username}</span>
+
+                                            <button
+                                                disabled={sentRequests.includes(u.id)}
+                                                onClick={() => sendFriendRequest(u)}
+                                            >
+                                                {sentRequests.includes(u.id) ? "Sent" : "+"}
+                                            </button>
                                         </div>
                                     ))}
-                                </div>
 
+                                </div>
                             </div>
                         )}
                     </>

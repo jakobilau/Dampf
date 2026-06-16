@@ -54,6 +54,7 @@ exports.sendMessage = async (req, res) => {
     const receiverSocket = onlineUsers.get(receiverId);
 
     if (receiverSocket) {
+      console.log(receiverId);
       io.to(receiverSocket).emit("new_message", message);
     }
 

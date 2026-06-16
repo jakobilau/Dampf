@@ -152,10 +152,7 @@
 }
 
 .chat-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    flex-shrink: 0;
 }
 
 .chat-messages {
@@ -163,7 +160,15 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    gap: 8px;
+}
+
+/* 🔥 WICHTIG: FIX FÜR INPUT POSITION */
+.chat-input {
+    display: flex;
     gap: 0.5rem;
+    padding-top: 0.75rem;
+    flex-shrink: 0;
 }
 
 .msg {
@@ -253,4 +258,50 @@
 
 .add-btn-small:hover {
     background: #4338ca;
+}
+
+.user-item button {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #3b82f6;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.user-item button:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+/* SENT STATE */
+.user-item button:disabled {
+    background: #444;
+    color: #aaa;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Basis message style */
+.msg {
+    max-width: 60%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #2a2a2a;
+    color: white;
+    align-self: flex-start; /* links */
+}
+
+/* deine Nachrichten */
+.msg.me {
+    background: #3b82f6;
+    align-self: flex-end; /* rechts */
+    text-align: right;
 }

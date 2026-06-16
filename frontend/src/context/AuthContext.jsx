@@ -2,7 +2,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { apiFetch } from "../api/apiFetch";
 import { socket } from "../socket/index";
 
+
 const AuthContext = createContext();
+
+const listeners = new Set();
+
+export function subscribeToMessages(fn) {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -61,7 +70,7 @@ export function AuthProvider({ children }) {
         credentials: "include",
       });
     } catch (err) {
-      console.error()
+      console.error(err)
     }
 
     socket.disconnect();
@@ -71,7 +80,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     loadUser();
   }, []);
-
+/*
   // Test Listener
   useEffect(() => {
     socket.on("new_message", (data) => {
@@ -80,6 +89,19 @@ export function AuthProvider({ children }) {
 
     return () => {
       socket.off("new_message");
+    };
+  }, []);
+*/
+  useEffect(() => {
+    const handler = (data) => {
+      console.log("Neue Nachricht:", data);
+      listeners.forEach((fn) => fn(data));
+    };
+
+    socket.on("new_message", handler);
+
+    return () => {
+      socket.off("new_message", handler);
     };
   }, []);
 
@@ -91,3 +113,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+

@@ -7,15 +7,22 @@ exports.searchUsers = async (req, res) => {
     if (!query) {
       return res.status(400).json({ message: "Missing query" });
     }
-
+    const userId = req.user.id;
     const [rows] = await db.query(
       `
-      SELECT username
-      FROM users
-      WHERE username LIKE ?
-      LIMIT 10
+      SELECT u.username
+      FROM users u
+      WHERE u.username LIKE ?
+        AND u.user_id != ?
+        AND NOT EXISTS (
+      SELECT 1
+      FROM friends f
+      WHERE (f.user_a = u.user_id AND f.user_b = ?)
+         OR (f.user_b = u.user_id AND f.user_a = ?)
+      )
+      LIMIT 10;
       `,
-      [`%${query}%`]
+      [`%${query}%`, userId, userId, userId]
     );
 
     res.json(rows);
