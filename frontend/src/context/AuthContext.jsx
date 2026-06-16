@@ -44,10 +44,6 @@ export function AuthProvider({ children }) {
 
     await loadUser();
   };
-<<<<<<< HEAD
-=======
-
->>>>>>> e48063ec883cb6ed0904a74a88f2f9b818820a5f
   const logout = async () => {
     try {
       await apiFetch("/api/auth/logout", {
