@@ -29,4 +29,9 @@ scene("game", () => {
         wait(interval, spawnWave);
     }
     spawnWave();
+    
+    player.onCollideUpdate("block", (block) => {
+        block.destroy()
+        go("end", Math.floor(score));
+    })
 });
