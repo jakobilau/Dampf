@@ -199,7 +199,7 @@ export default function LibraryPage() {
 
                         alt="Profilbild"
                         className="profile-avatar"
-                        
+                        src={`http://10.72.100.35${user.profile_image_path}`}
                     />
                     <div className="profile-info" onClick={() => navigate("/profile")}>
                         <span className="profile-name">

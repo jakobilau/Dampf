@@ -62,7 +62,7 @@ export default function Profil() {
         window.location.href = "/login";
     };
 
-
+    console.log(user);
 
 
     return (
@@ -76,7 +76,7 @@ export default function Profil() {
                 <img
                     src={
                         profileImage ||
-                        "https://via.placeholder.com/150"
+                        `http://10.72.100.35${user.profile_image_path}`
                     }
                     alt="Profilbild"
                     style={styles.image}
