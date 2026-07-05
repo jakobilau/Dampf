@@ -9,16 +9,9 @@ export function AuthProvider({ children }) {
 
     const loadUser = async () => {
         try {
-            const res = await apiFetch("/api/auth/me");
-
-            if (!res.ok) {
-                setUser(null);
-                return;
-            }
-
-            const data = await res.json();
+            const data = await apiFetch("/api/auth/me");
             setUser(data);
-        } catch {
+        } catch (err) {
             setUser(null);
         } finally {
             setLoading(false);
@@ -26,20 +19,27 @@ export function AuthProvider({ children }) {
     };
 
     const login = async (username, password) => {
-        const res = await apiFetch("/api/auth/login", {
-            method: "POST",
-            body: JSON.stringify({ username, password }),
-        });
+        try {
+            await apiFetch("/api/auth/login", {
+                method: "POST",
+                body: JSON.stringify({ username, password }),
+            });
 
-        if (!res.ok) throw new Error("login failed");
-
-        await loadUser();
+            await loadUser();
+        } catch (err) {
+            console.error("LOGIN ERROR:", err.message);
+            throw err;
+        }
     };
 
     const logout = async () => {
-        await apiFetch("/api/auth/logout", {
-            method: "POST",
-        });
+        try {
+            await apiFetch("/api/auth/logout", {
+                method: "POST",
+            });
+        } catch (err) {
+            console.error("LOGOUT ERROR:", err.message);
+        }
 
         setUser(null);
     };
@@ -55,5 +55,4 @@ export function AuthProvider({ children }) {
     );
 }
 
-/* 👇 DAS IST DER WICHTIGE TEIL */
 export const useAuth = () => useContext(AuthContext);

@@ -38,23 +38,20 @@ exports.sendMessage = async (req, res) => {
     );
 
     const message = {
-      id: result.insertId,
-      senderId,
-      receiverId,
+      message_id: result.insertId,
+      sender_id: senderId,
+      receiver_id: receiverId,
       content,
     };
 
     const onlineUsers = socketModule.getOnlineUsers();
     const io = socketModule.getIO();
 
-    if (!onlineUsers || !io) {
-      return res.json(message);
-    }
-
-    const receiverSocket = onlineUsers.get(receiverId);
+    const receiverSocket = onlineUsers?.get(Number(receiverId));
 
     if (receiverSocket) {
-      console.log(receiverId);
+console.log("📤 EMIT new_message to socket:", receiverSocket);
+
       io.to(receiverSocket).emit("new_message", message);
     }
 

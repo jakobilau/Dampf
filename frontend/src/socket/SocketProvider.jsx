@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../auth/AuthProvider";
 
@@ -6,37 +6,34 @@ const SocketContext = createContext(null);
 
 export function SocketProvider({ children }) {
     const { user } = useAuth();
-    const socketRef = useRef(null);
+    const [socket, setSocket] = useState(null);
 
     useEffect(() => {
         if (!user) return;
 
-        // Socket Verbindung aufbauen
-        const socket = io(window.location.origin, {
+        const newSocket = io(window.location.origin, {
             withCredentials: true,
             autoConnect: true,
         });
 
-        socketRef.current = socket;
-
-        // User beim Server registrieren
-        socket.on("connect", () => {
-            socket.emit("register", user.user_id);
+        newSocket.on("connect", () => {
+            console.log("🟢 SOCKET CONNECTED:", newSocket.id);
+            newSocket.emit("register", user.user_id);
         });
 
-        // Cleanup beim Unmount oder user logout
+        setSocket(newSocket);
+
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            newSocket.disconnect();
+            setSocket(null);
         };
     }, [user]);
 
     return (
-        <SocketContext.Provider value={socketRef.current}>
+        <SocketContext.Provider value={socket}>
             {children}
         </SocketContext.Provider>
     );
 }
 
-// Hook für andere Komponenten
 export const useSocket = () => useContext(SocketContext);

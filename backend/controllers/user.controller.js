@@ -10,7 +10,7 @@ exports.searchUsers = async (req, res) => {
     const userId = req.user.id;
     const [rows] = await db.query(
       `
-      SELECT   
+      SELECT
       u.user_id,
       u.username,
       u.profile_image_path

@@ -6,23 +6,23 @@ exports.getFriends = async (req, res) => {
 
     const [rows] = await db.query(
       `
-  SELECT 
+  SELECT
       u.user_id,
       u.username,
       u.profile_image_path
   FROM friends f
-  JOIN users u 
+  JOIN users u
     ON u.user_id = f.user_b
   WHERE f.user_a = ?
 
   UNION
 
-  SELECT 
+  SELECT
       u.user_id,
       u.username,
       u.profile_image_path
   FROM friends f
-  JOIN users u 
+  JOIN users u
     ON u.user_id = f.user_a
   WHERE f.user_b = ?
   `,

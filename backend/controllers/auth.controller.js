@@ -101,22 +101,19 @@ exports.login = async (req, res) => {
 
 exports.me = async (req, res) => {
   try {
+
     const [rows] = await db.query(
-       "SELECT user_id, username, email, role FROM users WHERE user_id = ? ",
+      "SELECT user_id, username, email, role FROM users WHERE user_id = ?",
       [req.user.id]
     );
+
     if (rows.length === 0) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(rows[0]);
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -7,6 +7,12 @@ export function useMessages(onMessage) {
   useEffect(() => {
     if (!socket) return;
 
+              const handler = (msg) => {
+      console.log("🔥 SOCKET RECEIVED new_message:", msg);
+      onMessage(msg);
+    };
+
+
     socket.on("new_message", onMessage);
 
     return () => {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "./auth/AuthProvider";
-import { useMessages } from "../messages/useMessages";
-import { apiFetch } from "../api/apiFetch";
+import { useMessages } from "./messages/useMessages";
+import { apiFetch } from "./api/apiFetch";
 import "./LibraryPage.css";
 
 /* ---------------- DATA ---------------- */
@@ -28,17 +28,14 @@ export default function LibraryPage() {
     const [sentRequests, setSentRequests] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
 
-    /* FRIENDS */
     const [addFriendMode, setAddFriendMode] = useState(false);
     const [friendQuery, setFriendQuery] = useState("");
     const [friendList, setFriendList] = useState([]);
 
-    /* CHAT */
     const [activeChatUser, setActiveChatUser] = useState(null);
     const [messages, setMessages] = useState({});
     const [chatInput, setChatInput] = useState("");
 
-    /* STORE */
     const [storeQuery, setStoreQuery] = useState("");
 
     const activeChatRef = useRef(null);
@@ -73,18 +70,16 @@ export default function LibraryPage() {
 
     const sendFriendRequest = (user) => {
         setSentRequests((prev) => [...prev, user.id]);
-        console.log("Friend request sent to:", user.username);
     };
 
     const handleFriendSearchKey = async (e) => {
         if (e.key !== "Enter") return;
 
         try {
-            const res = await apiFetch(
+            const data = await apiFetch(
                 `/api/users/friends/search?query=${friendQuery}`
             );
 
-            const data = await res.json();
             setSearchResults(data);
             setSearchSubmitted(true);
         } catch (err) {
@@ -113,8 +108,7 @@ export default function LibraryPage() {
         setActiveChatUser(user);
 
         try {
-            const res = await apiFetch(`/api/messages/${user.user_id}`);
-            const data = await res.json();
+            const data = await apiFetch(`/api/messages/${user.user_id}`);
 
             const formatted = data.map((m) => ({
                 ...m,
@@ -175,8 +169,7 @@ export default function LibraryPage() {
     useEffect(() => {
         async function fetchFriends() {
             try {
-                const res = await apiFetch("/api/friends");
-                const data = await res.json();
+                const data = await apiFetch("/api/friends");
                 setFriendList(data);
             } catch (err) {
                 console.error(err);
@@ -191,10 +184,8 @@ export default function LibraryPage() {
     return (
         <div className="layout">
 
-            {/* LEFT PANEL */}
             <aside className="friends-panel">
 
-                {/* CHAT VIEW */}
                 {activeChatUser && (
                     <div className="chat-view">
 
@@ -225,7 +216,6 @@ export default function LibraryPage() {
                     </div>
                 )}
 
-                {/* FRIENDS VIEW */}
                 {!activeChatUser && (
                     <>
                         <div className="friends-header">
@@ -287,6 +277,7 @@ export default function LibraryPage() {
                                 />
 
                                 <div className="search-results">
+
                                     {searchResults.length === 0 && (
                                         <p style={{ color: "#888" }}>
                                             Keine Nutzer gefunden
@@ -301,9 +292,7 @@ export default function LibraryPage() {
                                                 disabled={sentRequests.includes(u.id)}
                                                 onClick={() => sendFriendRequest(u)}
                                             >
-                                                {sentRequests.includes(u.id)
-                                                    ? "Sent"
-                                                    : "+"}
+                                                {sentRequests.includes(u.id) ? "Sent" : "+"}
                                             </button>
                                         </div>
                                     ))}
@@ -315,7 +304,6 @@ export default function LibraryPage() {
                 )}
             </aside>
 
-            {/* RIGHT PANEL */}
             <main className="main-panel">
 
                 <div className="tabs">
@@ -345,7 +333,9 @@ export default function LibraryPage() {
                 )}
 
                 <h2>
-                    {activeTab === "library" ? "Spielebibliothek" : "Store"}
+                    {activeTab === "library"
+                        ? "Spielebibliothek"
+                        : "Store"}
                 </h2>
 
                 <div className="games-grid">

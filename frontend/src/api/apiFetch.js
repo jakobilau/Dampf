@@ -27,7 +27,8 @@ export async function apiFetch(url, options = {}) {
   }
 
   if (!res.ok) {
-    throw new Error(data?.message || "Request failed");
+     console.error("API ERROR:", res.status, data);
+  throw new Error(data?.message || `HTTP ${res.status}`);
   }
 
   return data;

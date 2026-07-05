@@ -15,7 +15,7 @@ export default function Login() {
     setError("");
 
     try {
-      await login(username, password); 
+      await login(username, password);
       navigate("/Library", { replace: true });
     } catch (err) {
       setError(err.message);
