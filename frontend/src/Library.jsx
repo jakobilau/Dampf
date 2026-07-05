@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../auth/AuthProvider";
+import { useAuth } from "./auth/AuthProvider";
 import { useMessages } from "../messages/useMessages";
 import { apiFetch } from "../api/apiFetch";
 import "./LibraryPage.css";
