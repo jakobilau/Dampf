@@ -103,7 +103,7 @@ exports.me = async (req, res) => {
   try {
 
     const [rows] = await db.query(
-      "SELECT user_id, username, email, role FROM users WHERE user_id = ?",
+      "SELECT user_id, username, email, role, biography, profile_image_path FROM users WHERE user_id = ?",
       [req.user.id]
     );
 
