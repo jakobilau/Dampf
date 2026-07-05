@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
 import Dashboard from "./Dashboard";
+import Profile from "./Profile";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import LibraryPage from "./Library";
 
@@ -16,7 +17,15 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard/>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
@@ -24,7 +33,7 @@ function App() {
         path="/Library"
         element={
           <ProtectedRoute>
-            <LibraryPage/>
+            <LibraryPage />
           </ProtectedRoute>
         }
       />

@@ -2,9 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "./auth/AuthProvider";
 import { useMessages } from "./messages/useMessages";
 import { apiFetch } from "./api/apiFetch";
+import { useNavigate } from "react-router-dom";
 import "./LibraryPage.css";
-
-/* ---------------- DATA ---------------- */
 
 const gamesLibrary = [
     { id: 1, title: "Minecraft" },
@@ -17,17 +16,15 @@ const storeGames = [
     { id: 203, title: "Cyberpunk 2077" },
 ];
 
-/* ---------------- COMPONENT ---------------- */
-
 export default function LibraryPage() {
     const { user } = useAuth();
     const currentUserId = user?.user_id;
-
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("library");
     const [searchSubmitted, setSearchSubmitted] = useState(false);
     const [sentRequests, setSentRequests] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
-
+    const [friendRequest, setFriendRequest] = useState(null);
     const [addFriendMode, setAddFriendMode] = useState(false);
     const [friendQuery, setFriendQuery] = useState("");
     const [friendList, setFriendList] = useState([]);
@@ -66,6 +63,19 @@ export default function LibraryPage() {
         }));
     });
 
+    const acceptFriendRequest = async () => {
+        // API-Aufruf zum Annehmen
+        console.log("Freundschaft angenommen:", friendRequest);
+
+        setFriendRequest(null);
+    };
+
+    const declineFriendRequest = async () => {
+        // API-Aufruf zum Ablehnen
+        console.log("Freundschaft abgelehnt:", friendRequest);
+
+        setFriendRequest(null);
+    };
     /* ---------------- FRIENDS ---------------- */
 
     const sendFriendRequest = (user) => {
@@ -93,8 +103,8 @@ export default function LibraryPage() {
         activeTab === "library"
             ? gamesLibrary
             : storeGames.filter((g) =>
-                  g.title.toLowerCase().includes(storeQuery.toLowerCase())
-              );
+                g.title.toLowerCase().includes(storeQuery.toLowerCase())
+            );
 
     const handleStoreSearchKey = (e) => {
         if (e.key === "Enter") {
@@ -183,9 +193,20 @@ export default function LibraryPage() {
 
     return (
         <div className="layout">
-
             <aside className="friends-panel">
+                <div className="profile-tile">
+                    <img
 
+                        alt="Profilbild"
+                        className="profile-avatar"
+                        
+                    />
+                    <div className="profile-info" onClick={() => navigate("/profile")}>
+                        <span className="profile-name">
+                            {user?.username || "Unknown"}
+                        </span>
+                    </div>
+                </div>
                 {activeChatUser && (
                     <div className="chat-view">
 
@@ -342,12 +363,41 @@ export default function LibraryPage() {
                     {games.map((game) => (
                         <div key={game.id} className="game-tile">
                             <div className="game-cover" />
+
                             <span>{game.title}</span>
+
+                            <button
+                                className="play-button"
+                                onClick={() => console.log(`Starte ${game.title}`)}
+                            >
+                                Starten
+                            </button>
                         </div>
                     ))}
                 </div>
 
             </main>
+            {friendRequest && (
+                <div className="popup-overlay">
+                    <div className="friend-request-popup">
+                        <h3>Freundschaftsanfrage</h3>
+
+                        <p>
+                            <strong>{friendRequest.username}</strong> möchte dich als Freund hinzufügen.
+                        </p>
+
+                        <div className="popup-buttons">
+                            <button onClick={acceptFriendRequest}>
+                                Ja
+                            </button>
+
+                            <button onClick={declineFriendRequest}>
+                                Nein
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

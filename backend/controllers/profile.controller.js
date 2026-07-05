@@ -72,7 +72,7 @@ exports.updateAvatar = async (req, res) => {
         const fileUrl = `/uploads/avatars/${req.file.filename}`;
 
         await db.query(
-            `UPDATE users SET avatar_url = ? WHERE user_id = ?`,
+            `UPDATE users SET profile_image_path = ? WHERE user_id = ?`,
             [fileUrl, req.user.id]
         );
 
