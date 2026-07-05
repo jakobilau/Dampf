@@ -1,116 +1,38 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { apiFetch } from "../api/apiFetch";
-import { socket } from "../socket/index";
+import { createContext, useContext, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
+import { useAuth } from "../auth/AuthProvider";
 
+const SocketContext = createContext(null);
 
-const AuthContext = createContext();
+export function SocketProvider({ children }) {
+  const { user } = useAuth();
+  const socketRef = useRef(null);
 
-const listeners = new Set();
+  useEffect(() => {
+    if (!user) return;
 
-export function subscribeToMessages(fn) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
-
-
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const loadUser = async () => {
-    try {
-      const res = await apiFetch("/api/auth/me", {
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        setUser(null);
-        return;
-      }
-
-      const data = await res.json();
-
-      setUser(data);
-
-      // Socket registrieren
-      if (!socket.connected) {
-        socket.connect();
-      }
-
-      socket.emit("register", data.user_id);
-
-    } catch (err) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (username, password) => {
-    const res = await apiFetch("/api/auth/login", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
+    const socket = io(window.location.origin, {
+      withCredentials: true,
+      autoConnect: true,
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || "login failed");
-    }
+    socketRef.current = socket;
 
-    await loadUser();
-  };
-  const logout = async () => {
-    try {
-      await apiFetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.error(err)
-    }
-
-    socket.disconnect();
-    setUser(null);
-  };
-
-  useEffect(() => {
-    loadUser();
-  }, []);
-/*
-  // Test Listener
-  useEffect(() => {
-    socket.on("new_message", (data) => {
-      console.log("Neue Nachricht:", data);
+    socket.on("connect", () => {
+      socket.emit("register", user.user_id);
     });
 
     return () => {
-      socket.off("new_message");
+      socket.disconnect();
+      socketRef.current = null;
     };
-  }, []);
-*/
-  useEffect(() => {
-    const handler = (data) => {
-      console.log("Neue Nachricht:", data);
-      listeners.forEach((fn) => fn(data));
-    };
-
-    socket.on("new_message", handler);
-
-    return () => {
-      socket.off("new_message", handler);
-    };
-  }, []);
+  }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <SocketContext.Provider value={socketRef.current}>
       {children}
-    </AuthContext.Provider>
+    </SocketContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
-
+export const useSocket = () => useContext(SocketContext);

@@ -10,7 +10,7 @@ exports.getMessages = async (req, res) => {
       `
       SELECT *
       FROM messages
-      WHERE 
+      WHERE
         (sender_id = ? AND receiver_id = ?)
         OR
         (sender_id = ? AND receiver_id = ?)

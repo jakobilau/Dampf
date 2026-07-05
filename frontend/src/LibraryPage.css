@@ -110,7 +110,7 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: 8px;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #202020, #2b2b2b);
 }
 
 .friends-header {
@@ -304,4 +304,4 @@
     background: #3b82f6;
     align-self: flex-end; /* rechts */
     text-align: right;
-}
+}%       

@@ -1,17 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { subscribeToMessages } from "./context/AuthContext";
+import { useAuth } from "../auth/AuthProvider";
+import { useMessages } from "../messages/useMessages";
+import { apiFetch } from "../api/apiFetch";
 import "./LibraryPage.css";
 
 /* ---------------- DATA ---------------- */
-
-const friends = [];
-
-const allUsers = [
-    { id: 101, name: "John Doe" },
-    { id: 102, name: "Sarah K." },
-    { id: 103, name: "Alex M." },
-    { id: 104, name: "Lisa R." },
-];
 
 const gamesLibrary = [
     { id: 1, title: "Minecraft" },
@@ -27,24 +20,25 @@ const storeGames = [
 /* ---------------- COMPONENT ---------------- */
 
 export default function LibraryPage() {
+    const { user } = useAuth();
+    const currentUserId = user?.user_id;
+
     const [activeTab, setActiveTab] = useState("library");
-    const [currentUserId, setCurrentUserId] = useState(null);
     const [searchSubmitted, setSearchSubmitted] = useState(false);
     const [sentRequests, setSentRequests] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
 
-    /* FRIENDS STATES */
+    /* FRIENDS */
     const [addFriendMode, setAddFriendMode] = useState(false);
     const [friendQuery, setFriendQuery] = useState("");
     const [friendList, setFriendList] = useState([]);
 
-
-    /* CHAT STATE */
+    /* CHAT */
     const [activeChatUser, setActiveChatUser] = useState(null);
     const [messages, setMessages] = useState({});
     const [chatInput, setChatInput] = useState("");
 
-    /* STORE SEARCH */
+    /* STORE */
     const [storeQuery, setStoreQuery] = useState("");
 
     const activeChatRef = useRef(null);
@@ -53,74 +47,44 @@ export default function LibraryPage() {
         activeChatRef.current = activeChatUser;
     }, [activeChatUser]);
 
-    useEffect(() => {
-        const unsubscribe = subscribeToMessages((msg) => {
-            if (!currentUserId) return;
+    /* ---------------- SOCKET MESSAGES ---------------- */
 
-            const otherUserId =
-                msg.sender_id === currentUserId
-                    ? msg.receiver_id
-                    : msg.sender_id;
+    useMessages((msg) => {
+        if (!currentUserId) return;
 
-            /* const active = activeChatRef.current;
- 
-             if (active?.user_id !== otherUserId) return;*/
+        const otherUserId =
+            msg.sender_id === currentUserId
+                ? msg.receiver_id
+                : msg.sender_id;
 
-            setMessages((prev) => ({
-                ...prev,
-                [otherUserId]: [
-                    ...(prev[otherUserId] || []),
-                    {
-                        ...msg,
-                        fromMe: msg.sender_id === currentUserId,
-                    },
-                ],
-            }));
-        });
+        setMessages((prev) => ({
+            ...prev,
+            [otherUserId]: [
+                ...(prev[otherUserId] || []),
+                {
+                    ...msg,
+                    fromMe: msg.sender_id === currentUserId,
+                },
+            ],
+        }));
+    });
 
-        return unsubscribe;
-    }, [currentUserId]);
-
-    useEffect(() => {
-        async function fetchCurrentUser() {
-            try {
-                const res = await fetch("/api/auth/me");
-                const data = await res.json();
-
-                setCurrentUserId(data.user_id);
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        fetchCurrentUser();
-    }, []);
-
-    const games =
-        activeTab === "library"
-            ? gamesLibrary
-            : storeGames.filter(g =>
-                g.title.toLowerCase().includes(storeQuery.toLowerCase())
-            );
-
-    /* ---------------- FRIEND SEARCH ---------------- */
-
-    const filteredUsers = searchResults;
-
-    const enterPressed = (e) => e.key === "Enter";
+    /* ---------------- FRIENDS ---------------- */
 
     const sendFriendRequest = (user) => {
-        setSentRequests(prev => [...prev, user.id]);
-        console.log("Friend request sent to:", user.name);
+        setSentRequests((prev) => [...prev, user.id]);
+        console.log("Friend request sent to:", user.username);
     };
 
     const handleFriendSearchKey = async (e) => {
         if (e.key !== "Enter") return;
 
         try {
-            const res = await fetch(`/api/friends/search?query=${friendQuery}`);
-            const data = await res.json();
+            const res = await apiFetch(
+                `/api/users/friends/search?query=${friendQuery}`
+            );
 
+            const data = await res.json();
             setSearchResults(data);
             setSearchSubmitted(true);
         } catch (err) {
@@ -128,8 +92,17 @@ export default function LibraryPage() {
         }
     };
 
+    /* ---------------- STORE ---------------- */
+
+    const games =
+        activeTab === "library"
+            ? gamesLibrary
+            : storeGames.filter((g) =>
+                  g.title.toLowerCase().includes(storeQuery.toLowerCase())
+              );
+
     const handleStoreSearchKey = (e) => {
-        if (enterPressed(e)) {
+        if (e.key === "Enter") {
             console.log("Store search:", storeQuery);
         }
     };
@@ -140,16 +113,17 @@ export default function LibraryPage() {
         setActiveChatUser(user);
 
         try {
-            const resMsg = await fetch(`/api/messages/${user.user_id}`);
-            const dataMsg = await resMsg.json();
-            const formatted = dataMsg.map(m => ({
+            const res = await apiFetch(`/api/messages/${user.user_id}`);
+            const data = await res.json();
+
+            const formatted = data.map((m) => ({
                 ...m,
-                fromMe: m.sender_id === currentUserId
+                fromMe: m.sender_id === currentUserId,
             }));
 
-            setMessages(prev => ({
+            setMessages((prev) => ({
                 ...prev,
-                [user.user_id]: formatted
+                [user.user_id]: formatted,
             }));
         } catch (err) {
             console.error(err);
@@ -158,24 +132,16 @@ export default function LibraryPage() {
 
     const sendMessage = async () => {
         const content = chatInput.trim();
-
-        if (!content) return;
+        if (!content || !activeChatUser) return;
 
         try {
-            const res = await fetch("/api/messages", {
+            await apiFetch("/api/messages", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
                 body: JSON.stringify({
                     receiverId: activeChatUser.user_id,
-                    content
-                })
+                    content,
+                }),
             });
-
-            if (!res.ok) {
-                throw new Error("Failed to send message");
-            }
 
             const newMessage = {
                 message_id: Date.now(),
@@ -183,20 +149,19 @@ export default function LibraryPage() {
                 receiver_id: activeChatUser.user_id,
                 content,
                 created_at: new Date().toISOString(),
-                fromMe: true
+                fromMe: true,
             };
 
-            setMessages(prev => ({
+            setMessages((prev) => ({
                 ...prev,
                 [activeChatUser.user_id]: [
                     ...(prev[activeChatUser.user_id] || []),
-                    newMessage
-                ]
+                    newMessage,
+                ],
             }));
 
             setChatInput("");
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
         }
     };
@@ -205,19 +170,23 @@ export default function LibraryPage() {
         setActiveChatUser(null);
     };
 
+    /* ---------------- FRIENDS LIST ---------------- */
+
     useEffect(() => {
         async function fetchFriends() {
             try {
-                const res = await fetch("/api/friends");
+                const res = await apiFetch("/api/friends");
                 const data = await res.json();
-                console.log(data);
                 setFriendList(data);
             } catch (err) {
                 console.error(err);
             }
         }
+
         fetchFriends();
     }, []);
+
+    /* ---------------- UI ---------------- */
 
     return (
         <div className="layout">
@@ -230,19 +199,13 @@ export default function LibraryPage() {
                     <div className="chat-view">
 
                         <div className="chat-header">
-                            <button onClick={goBackToFriends}>
-                                ← Back
-                            </button>
-
+                            <button onClick={goBackToFriends}>← Back</button>
                             <h3>{activeChatUser.name}</h3>
                         </div>
 
                         <div className="chat-messages">
                             {(messages[activeChatUser.user_id] || []).map((m, i) => (
-                                <div
-                                    key={i}
-                                    className={`msg ${m.fromMe ? "me" : ""}`}
-                                >
+                                <div key={i} className={`msg ${m.fromMe ? "me" : ""}`}>
                                     {m.content}
                                 </div>
                             ))}
@@ -257,9 +220,7 @@ export default function LibraryPage() {
                                 }}
                                 placeholder="Nachricht..."
                             />
-                            <button onClick={sendMessage}>
-                                Send
-                            </button>
+                            <button onClick={sendMessage}>Send</button>
                         </div>
                     </div>
                 )}
@@ -273,7 +234,7 @@ export default function LibraryPage() {
                             <button
                                 className={`add-btn ${addFriendMode ? "active" : ""}`}
                                 onClick={() => {
-                                    setAddFriendMode(p => !p);
+                                    setAddFriendMode((p) => !p);
                                     setSearchSubmitted(false);
                                     setFriendQuery("");
                                 }}
@@ -282,10 +243,9 @@ export default function LibraryPage() {
                             </button>
                         </div>
 
-                        {/* LIST */}
                         {!addFriendMode && (
                             <ul className="friends-list">
-                                {friendList.map(f => (
+                                {friendList.map((f) => (
                                     <li
                                         key={f.user_id}
                                         className="friend-item"
@@ -297,9 +257,9 @@ export default function LibraryPage() {
                             </ul>
                         )}
 
-                        {/* SEARCH USERS */}
                         {addFriendMode && (
                             <div className="add-friend-view">
+
                                 <div className="friend-search-header">
                                     <button
                                         className="back-btn"
@@ -313,6 +273,7 @@ export default function LibraryPage() {
                                         ← Zurück
                                     </button>
                                 </div>
+
                                 <input
                                     className="friend-search"
                                     value={friendQuery}
@@ -326,14 +287,13 @@ export default function LibraryPage() {
                                 />
 
                                 <div className="search-results">
-
                                     {searchResults.length === 0 && (
                                         <p style={{ color: "#888" }}>
                                             Keine Nutzer gefunden
                                         </p>
                                     )}
 
-                                    {searchResults.map(u => (
+                                    {searchResults.map((u) => (
                                         <div key={u.id} className="user-item">
                                             <span>{u.username}</span>
 
@@ -341,12 +301,14 @@ export default function LibraryPage() {
                                                 disabled={sentRequests.includes(u.id)}
                                                 onClick={() => sendFriendRequest(u)}
                                             >
-                                                {sentRequests.includes(u.id) ? "Sent" : "+"}
+                                                {sentRequests.includes(u.id)
+                                                    ? "Sent"
+                                                    : "+"}
                                             </button>
                                         </div>
                                     ))}
-
                                 </div>
+
                             </div>
                         )}
                     </>
@@ -372,7 +334,6 @@ export default function LibraryPage() {
                     </button>
                 </div>
 
-                {/* STORE SEARCH */}
                 {activeTab === "store" && (
                     <input
                         className="store-search"
@@ -384,13 +345,11 @@ export default function LibraryPage() {
                 )}
 
                 <h2>
-                    {activeTab === "library"
-                        ? "Spielebibliothek"
-                        : "Store"}
+                    {activeTab === "library" ? "Spielebibliothek" : "Store"}
                 </h2>
 
                 <div className="games-grid">
-                    {games.map(game => (
+                    {games.map((game) => (
                         <div key={game.id} className="game-tile">
                             <div className="game-cover" />
                             <span>{game.title}</span>
