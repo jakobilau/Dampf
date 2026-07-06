@@ -31,6 +31,23 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.logout = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      path: "/",
+    });
+
+    return res.json({ message: "Logged out" });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;

@@ -14,6 +14,8 @@ app.use("/api/users", require("./routes/user.routes"));
 app.use("/api/friends", require("./routes/friends.routes"));
 app.use("/api/messages", require("./routes/messages.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
+app.use("/api/games", require("./routes/games.routes"));
+app.use("/api/library", require("./routes/library.routes"));
 
 app.use(
     "/uploads",
