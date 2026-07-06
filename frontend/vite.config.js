@@ -7,10 +7,14 @@ export default defineConfig({
   VitePWA({
     registerType: 'autoUpdate',
 
-    workbox: {
-    navigateFallbackExclude: [
+  workbox: {
+    cleanupOutdatedCaches: true,
+
+    navigateFallback: "/index.html",
+
+    navigateFallbackDenylist: [
       /^\/games\//
-    ],
+    ]
   },
 
     manifest: {
