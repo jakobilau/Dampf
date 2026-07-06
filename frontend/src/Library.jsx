@@ -113,10 +113,9 @@ export default function LibraryPage() {
 
 
     const declineFriendRequest = async () => {
-        // API-Aufruf zum Ablehnen
         console.log("Freundschaft abgelehnt:", friendRequest);
-
         setFriendRequest(null);
+        setPopup(null);
     };
     /* ---------------- FRIENDS ---------------- */
 
@@ -726,49 +725,26 @@ export default function LibraryPage() {
                 )}
 
             </main>
-            {
-                friendRequest && (
-                    <div className="popup-overlay">
-                        <div className="friend-request-popup">
-                            <h3>Freundschaftsanfrage</h3>
-
-                            <p>
-                                <strong>{friendRequest.username}</strong> möchte dich als Freund hinzufügen.
-                            </p>
-
-                            <div className="popup-buttons">
-                                <button onClick={acceptFriendRequest}>
-                                    Ja
-                                </button>
-
-                                <button onClick={declineFriendRequest}>
-                                    Nein
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
             {popup && (
                 <div className="popup-overlay">
                     <div className="friend-request-popup">
 
                         <p>
-                            {popup.user.username} möchte Freund werden
+                            {popup.user.username} wants to be your friend.
                         </p>
 
                         <div className="popup-buttons">
 
                             <button
-                                onClick={() => setPopup(null)}
+                                onClick={acceptFriendRequest}
                             >
-                                Annehmen
+                                Accept
                             </button>
 
                             <button
-                                onClick={() => setPopup(null)}
+                                onClick={declineFriendRequest}
                             >
-                                Ablehnen
+                                Decline
                             </button>
 
                         </div>
