@@ -4,11 +4,10 @@ const db = require("../db");
 exports.getGames = async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT game_id, publisher_id, folder_name, title, genre, cover_url
+            SELECT game_id, publisher_id, folder_name, title, genre
             FROM games
             ORDER BY title ASC
         `);
-
         res.json(rows);
 
     } catch (err) {

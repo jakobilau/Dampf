@@ -10,11 +10,6 @@ const gamesLibrary = [
     { id: 2, title: "Terraria" },
 ];
 
-const storeGames = [
-    { id: 201, title: "Elden Ring" },
-    { id: 202, title: "Hades" },
-    { id: 203, title: "Cyberpunk 2077" },
-];
 
 export default function LibraryPage() {
     const { user } = useAuth();
@@ -28,7 +23,8 @@ export default function LibraryPage() {
     const [addFriendMode, setAddFriendMode] = useState(false);
     const [friendQuery, setFriendQuery] = useState("");
     const [friendList, setFriendList] = useState([]);
-
+    const [storeGames, setStoreGames] = useState([]);
+    const [libraryGames, setlibraryGames] = useState([]);
     const [activeChatUser, setActiveChatUser] = useState(null);
     const [messages, setMessages] = useState({});
     const [chatInput, setChatInput] = useState("");
@@ -138,8 +134,8 @@ export default function LibraryPage() {
 
     const games =
         activeTab === "library"
-            ? gamesLibrary
-            : storeGames.filter((g) =>
+            ? libraryGames
+            : storeGames.filter(g =>
                 g.title.toLowerCase().includes(storeQuery.toLowerCase())
             );
 
@@ -234,11 +230,91 @@ export default function LibraryPage() {
         fetchFriends();
     }, []);
 
+    useEffect(() => {
+        async function fetchGames() {
+            try {
+                const data = await apiFetch("/api/games");
+                setStoreGames(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        fetchGames();
+    }, []);
+
+    useEffect(() => {
+        async function fetchLibrary() {
+            try {
+                const data = await apiFetch("/api/library");
+                setlibraryGames(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        fetchLibrary();
+    }, []);
+
+    const addToLibrary = async (gameId) => {
+        try {
+
+            await apiFetch(`/api/library/${gameId}/`, {
+                method: "POST"
+            });
+
+            const game = storeGames.find(g => g.id === gameId);
+
+            if (game)
+                setlibraryGames(prev => [...prev, {
+                    ...game,
+                    is_favored: false
+                }]);
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const toggleFavorite = async (gameId) => {
+
+        try {
+
+            await apiFetch(`/api/library/${gameId}/favorite`, {
+                method: "PATCH",
+                credentials: "include",
+            });
+
+            setlibraryGames(prev =>
+                prev.map(g =>
+                    g.id === gameId
+                        ? {
+                            ...g,
+                            is_favored: !g.is_favored
+                        }
+                        : g
+                )
+            );
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const isInLibrary = (id) =>
+        libraryGames.some(g => g.game_id === id);
+
+    const favoriteGames = libraryGames.filter(g => g.is_favored);
+
+    const normalGames = libraryGames.filter(g => !g.is_favored);
+
     const currentMessages = activeChatUser
         ? messages[activeChatUser.user_id] || []
         : [];
     const grouped = groupMessagesByDate(currentMessages);
     /* ---------------- UI ---------------- */
+
+    console.log(storeGames[0]);
+    console.log(libraryGames[0]);
 
     return (
         <div className="layout">
@@ -247,9 +323,9 @@ export default function LibraryPage() {
                     <img
                         alt="Profilbild"
                         className="profile-avatar"
-                        src={`https://10.72.100.35${activeChatUser?.profile_image_path ||
-                            user?.profile_image_path ||
-                            "/uploads/avatars/default.jpg"
+                        src={`https://10.72.100.35${activeChatUser?.profile_image_path
+                            ? activeChatUser.profile_image_path
+                            : "/uploads/avatars/default.jpg"
                             }`}
                     />
 
@@ -436,22 +512,146 @@ export default function LibraryPage() {
                         : "Store"}
                 </h2>
 
-                <div className="games-grid">
-                    {games.map((game) => (
-                        <div key={game.id} className="game-tile">
-                            <div className="game-cover" />
+                {activeTab === "library" ? (
 
-                            <span>{game.title}</span>
+                    <>
 
-                            <button
-                                className="play-button"
-                                onClick={() => console.log(`Starte ${game.title}`)}
-                            >
-                                Starten
-                            </button>
+                        <h3>Favoriten</h3>
+
+                        <div className="games-grid">
+
+                            {favoriteGames.map(game => (
+
+                                <div key={game.game_id} className="game-tile">
+
+                                    <img
+                                        className="game-cover"
+                                        src={
+                                            game.folder_name
+                                                ? `https://10.72.100.35${game.folder_name}display.png`
+                                                : `https://10.72.100.35/games/under_construction.png`
+                                        }
+                                    />
+
+                                    <span>{game.title}</span>
+
+                                    <div className="game-actions">
+
+                                        <button
+                                            onClick={() => toggleFavorite(game.game_id)}
+                                        >
+                                            ★
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                window.location.href =
+                                                `https://10.72.100.35${game.folder_name}index.html`
+                                            }
+                                        >
+                                            Starten
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
                         </div>
-                    ))}
-                </div>
+
+                        <h3>Alle Spiele</h3>
+
+                        <div className="games-grid">
+
+                            {normalGames.map(game => (
+
+                                <div key={game.game_id} className="game-tile">
+
+                                    <img
+                                        className="game-cover"
+                                        src={
+                                            game.folder_name
+                                                ? `https://10.72.100.35${game.folder_name}display.png`
+                                                : `https://10.72.100.35/games/under_construction.png`
+                                        }
+                                    />
+
+                                    <span>{game.title}</span>
+
+                                    <div className="game-actions">
+
+                                        <button
+                                            onClick={() => toggleFavorite(game.game_id)}
+                                        >
+                                            ☆
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                window.location.href =
+                                                `https://10.72.100.35${game.folder_name}index.html`
+                                            }
+                                        >
+                                            Starten
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    </>
+
+                ) : (
+
+                    <div className="games-grid">
+
+                        {games.map(game => (
+
+                            <div key={game.game_id} className="game-tile">
+
+                                <img
+                                    className="game-cover"
+                                    src={
+                                        game.folder_name
+                                            ? `https://10.72.100.35${game.folder_name}display.png`
+                                            : `https://10.72.100.35/games/under_construction.png`
+                                    }
+                                />
+
+                                <span>{game.title}</span>
+
+                                {isInLibrary(game.game_id) ? (
+
+                                    <button
+                                        className="library-button added"
+                                        disabled
+                                    >
+                                        ✓ In Bibliothek
+                                    </button>
+
+                                ) : (
+
+                                    <button
+                                        className="library-button"
+                                        onClick={() => addToLibrary(game.game_id)}
+                                    >
+                                        + Hinzufügen
+                                    </button>
+
+                                )}
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                )}
 
             </main>
             {friendRequest && (

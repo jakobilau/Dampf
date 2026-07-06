@@ -8,12 +8,9 @@ exports.getLibrary = async (req, res) => {
                 g.title,
                 g.genre,
                 g.folder_name,
-                g.cover_url,
-
                 l.is_favored,
-                l.playtime_minutes,
-                l.last_played
-            FROM library l
+                l.playtime_minutes
+            FROM library_entries l
             JOIN games g ON g.game_id = l.game_id
             WHERE l.user_id = ?
         `, [req.user.id]);
@@ -30,9 +27,9 @@ exports.getLibrary = async (req, res) => {
 exports.addToLibrary = async (req, res) => {
     try {
         await db.query(`
-            INSERT INTO library
-            (user_id, game_id, is_favored, playtime_minutes, last_played)
-            VALUES (?, ?, 0, 0, NULL)
+            INSERT INTO library_entries
+            (user_id, game_id, is_favored, playtime_minutes)
+            VALUES (?, ?, 0, 0)
         `, [
             req.user.id,
             req.params.gameId
@@ -73,7 +70,7 @@ exports.removeFromLibrary = async (req, res) => {
 exports.toggleFavorite = async (req, res) => {
     try {
         await db.query(`
-            UPDATE library
+            UPDATE library_entries
             SET is_favored = NOT is_favored
             WHERE user_id = ?
             AND game_id = ?
