@@ -37,12 +37,13 @@ exports.sendMessage = async (req, res) => {
       [senderId, receiverId, content]
     );
 
-    const message = {
-      message_id: result.insertId,
-      sender_id: senderId,
-      receiver_id: receiverId,
-      content,
-    };
+const message = {
+  message_id: result.insertId,
+  sender_id: senderId,
+  receiver_id: receiverId,
+  content,
+  created_at: new Date().toISOString(),
+};
 
     const onlineUsers = socketModule.getOnlineUsers();
     const io = socketModule.getIO();
