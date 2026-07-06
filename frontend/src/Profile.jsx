@@ -6,6 +6,7 @@ import { useAuth } from "./auth/AuthProvider";
 
 export default function Profil() {
     const { user } = useAuth();
+    const { logout } = useAuth();
     const [profileImage, setProfileImage] = useState(null);
     const [bio, setBio] = useState(user.biography);
     const [username, setUsername] = useState(user.username);
@@ -57,9 +58,8 @@ export default function Profil() {
 
     // Logout
     const handleLogout = () => {
-        // TODO: Token löschen / API logout
-        localStorage.removeItem("token");
-        window.location.href = "/login";
+        logout();
+        navigate("/login")
     };
 
     console.log(user);
@@ -76,7 +76,7 @@ export default function Profil() {
                 <img
                     src={
                         profileImage ||
-                        `http://10.72.100.35${user.profile_image_path}`
+                        `https://10.72.100.35${user.profile_image_path || '/uploads/avatars/default.jpg'}`
                     }
                     alt="Profilbild"
                     style={styles.image}

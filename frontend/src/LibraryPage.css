@@ -70,6 +70,45 @@
     margin-bottom: 1rem;
 }
 
+.profile-tile {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+    border-bottom: 1px solid #333;
+}
+
+.profile-tile span {
+    margin-left: 1em;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.friends-list .profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.friends-list li {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.friends-list li p {
+    margin-left: 1em;
+}
+
 .tabs button {
     padding: 0.5rem 1rem;
     border: none;
@@ -153,6 +192,7 @@
 
 .chat-header {
     flex-shrink: 0;
+    margin-bottom: 1em;
 }
 
 .chat-messages {
@@ -160,7 +200,6 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
 }
 
 .msg {
@@ -168,6 +207,7 @@
     border-radius: 8px;
     background: #2b2b2b;
     width: fit-content;
+    align-self: flex-start;
 }
 
 .msg.me {
@@ -175,11 +215,11 @@
     align-self: flex-end;
 }
 
-.chat-input{
-    display:flex;
-    gap:.5rem;
-    margin-top:1rem;
-    flex-shrink:0;
+.chat-input {
+    display: flex;
+    gap: .5rem;
+    margin-top: 1rem;
+    flex-shrink: 0;
 }
 
 .chat-input input {
@@ -280,22 +320,27 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    font-size: 14px;
 }
 
 /* Basis message style */
 .msg {
+    display: flex;
+    flex-direction: column;
     max-width: 60%;
     padding: 8px 12px;
     border-radius: 12px;
     background: #2a2a2a;
     color: white;
-    align-self: flex-start; /* links */
+    align-self: flex-start;
+    /* links */
 }
 
 /* deine Nachrichten */
 .msg.me {
     background: #3b82f6;
-    align-self: flex-end; /* rechts */
+    align-self: flex-end;
+    /* rechts */
     text-align: right;
 }
 
@@ -316,7 +361,7 @@
     border-radius: 10px;
     min-width: 320px;
     text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
 
 .popup-buttons {
@@ -329,4 +374,41 @@
 .popup-buttons button {
     padding: 8px 20px;
     cursor: pointer;
+}
+
+.back-btn {
+    background: transparent;
+    border: none;
+}
+
+.back-btn svg {
+    display: block;
+}
+
+.chat-msg-time {
+    font-size: 0.7em;
+    opacity: 0.7;
+}
+
+.chat-msg-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+}
+
+.chat-date-separator {
+    font-size: 0.7em;
+    opacity: 0.7;
+    align-self: center;
+    margin-bottom: 1.4em;
+    margin-top: 0.8em;
+}
+
+.send-btn {
+    background: transparent;
+    border: none;
+}
+
+.send-btn svg {
+    display: block;
 }

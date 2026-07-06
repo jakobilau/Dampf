@@ -70,6 +70,43 @@ export default function LibraryPage() {
         setFriendRequest(null);
     };
 
+    const groupMessagesByDate = (msgs) => {
+        const groups = {};
+
+        msgs.forEach((m) => {
+            const key = formatChatDate(m.created_at);
+
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(m);
+        });
+
+        return groups;
+    };
+
+    const formatChatDate = (date) => {
+        const d = new Date(date);
+
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        const normalize = (x) =>
+            new Date(x.getFullYear(), x.getMonth(), x.getDate());
+
+        const dNorm = normalize(d);
+        const tNorm = normalize(today);
+        const yNorm = normalize(yesterday);
+
+        if (dNorm.getTime() === tNorm.getTime()) return "Today";
+        if (dNorm.getTime() === yNorm.getTime()) return "Yesterday";
+
+        return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}.${d.getFullYear()}`;
+    };
+
+
+
     const declineFriendRequest = async () => {
         // API-Aufruf zum Ablehnen
         console.log("Freundschaft abgelehnt:", friendRequest);
@@ -129,9 +166,16 @@ export default function LibraryPage() {
                 ...prev,
                 [user.user_id]: formatted,
             }));
+            console.log(messages)
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const createChatMsgTime = (t) => {
+        const m = String(t.getMinutes()).padStart(2, "0");
+        const h = String(t.getHours()).padStart(2, "0");
+        return `${h}:${m}`;
     };
 
     const sendMessage = async () => {
@@ -180,6 +224,7 @@ export default function LibraryPage() {
         async function fetchFriends() {
             try {
                 const data = await apiFetch("/api/friends");
+                console.log(data);
                 setFriendList(data);
             } catch (err) {
                 console.error(err);
@@ -189,6 +234,10 @@ export default function LibraryPage() {
         fetchFriends();
     }, []);
 
+    const currentMessages = activeChatUser
+        ? messages[activeChatUser.user_id] || []
+        : [];
+    const grouped = groupMessagesByDate(currentMessages);
     /* ---------------- UI ---------------- */
 
     return (
@@ -196,31 +245,54 @@ export default function LibraryPage() {
             <aside className="friends-panel">
                 <div className="profile-tile">
                     <img
-
                         alt="Profilbild"
                         className="profile-avatar"
-                        src={`http://10.72.100.35${user.profile_image_path}`}
+                        src={`https://10.72.100.35${activeChatUser?.profile_image_path ||
+                            user?.profile_image_path ||
+                            "/uploads/avatars/default.jpg"
+                            }`}
                     />
-                    <div className="profile-info" onClick={() => navigate("/profile")}>
+
+                    <div
+                        className="profile-info"
+                        onClick={() =>
+                            activeChatUser ? null : navigate("/profile")
+                        }
+                    >
                         <span className="profile-name">
-                            {user?.username || "Unknown"}
+                            {activeChatUser?.username || user?.username || "Unknown"}
                         </span>
                     </div>
                 </div>
                 {activeChatUser && (
                     <div className="chat-view">
-
                         <div className="chat-header">
-                            <button onClick={goBackToFriends}>← Back</button>
+                            <button className="back-btn" onClick={goBackToFriends}>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
+                                    <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                                </svg>
+                            </button>
                             <h3>{activeChatUser.name}</h3>
                         </div>
 
                         <div className="chat-messages">
-                            {(messages[activeChatUser.user_id] || []).map((m, i) => (
-                                <div key={i} className={`msg ${m.fromMe ? "me" : ""}`}>
-                                    {m.content}
-                                </div>
-                            ))}
+                            {activeChatUser &&
+                                Object.entries(groupMessagesByDate(messages[activeChatUser.user_id] || [])).map(([date, msgs]) => (
+                                    <div className="chat-msg-group" key={date}>
+                                        <div className="chat-date-separator">
+                                            {date}
+                                        </div>
+
+                                        {msgs.map((m, i) => (
+                                            <div key={i} className={`msg ${m.fromMe ? "me" : ""}`}>
+                                                <span className="chat-msg-content">{m.content}</span>
+                                                <span className="chat-msg-time">
+                                                    {createChatMsgTime(new Date(m.created_at))}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
                         </div>
 
                         <div className="chat-input">
@@ -232,7 +304,9 @@ export default function LibraryPage() {
                                 }}
                                 placeholder="Nachricht..."
                             />
-                            <button onClick={sendMessage}>Send</button>
+                            <button className="send-btn" onClick={sendMessage}>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" /></svg>
+                            </button>
                         </div>
                     </div>
                 )}
@@ -262,7 +336,8 @@ export default function LibraryPage() {
                                         className="friend-item"
                                         onClick={() => openChat(f)}
                                     >
-                                        {f.username}
+                                        <img className="profile-avatar" src={`https://10.72.100.35${f.profile_image_path || '/uploads/avatars/default.jpg'}`} />
+                                        <p>{f.username}</p>
                                     </li>
                                 ))}
                             </ul>
@@ -281,7 +356,9 @@ export default function LibraryPage() {
                                             setFriendQuery("");
                                         }}
                                     >
-                                        ← Zurück
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
+                                            <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                                        </svg>
                                     </button>
                                 </div>
 
