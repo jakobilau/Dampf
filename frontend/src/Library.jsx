@@ -57,7 +57,19 @@ export default function LibraryPage() {
     });
 
     const acceptFriendRequest = async () => {
-        // API-Aufruf zum Annehmen
+
+        await fetch("/api/friends/accept", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                senderId: popup.user.user_id
+            })
+        });
+
+        setPopup(null);
         console.log("Freundschaft angenommen:", friendRequest);
 
         setFriendRequest(null);
