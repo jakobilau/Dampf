@@ -35,3 +35,23 @@ exports.getFriends = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.acceptRequest = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { senderId } = req.body;
+
+    // create friendship
+    await db.query(
+      `INSERT INTO friends (user_a, user_b)
+       VALUES (?, ?)`,
+      [userId, senderId]
+    );
+
+    res.json({ message: "Friend added" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

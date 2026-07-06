@@ -20,6 +20,17 @@ function init(ioInstance) {
         }
       }
     });
+
+socket.on("friend_request_live", ({ toUserId, fromUser }) => {
+  const targetSocketId = onlineUsers.get(toUserId);
+
+  if (!targetSocketId) return;
+
+  io.to(targetSocketId).emit("friend_request_popup", {
+    fromUser
+  });
+});
+
   });
 }
 
