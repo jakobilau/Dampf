@@ -262,13 +262,28 @@ export default function LibraryPage() {
                 method: "POST"
             });
 
-            const game = storeGames.find(g => g.id === gameId);
+            const game = storeGames.find(g => g.game_id === gameId);
 
             if (game)
                 setlibraryGames(prev => [...prev, {
                     ...game,
                     is_favored: false
                 }]);
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const removeFromLibrary = async (gameId) => {
+        try {
+            await apiFetch(`/api/library/${gameId}/`, {
+                method: "DELETE"
+            });
+
+            setlibraryGames(prev =>
+                prev.filter(g => g.game_id !== gameId)
+            );
 
         } catch (err) {
             console.error(err);
@@ -286,7 +301,7 @@ export default function LibraryPage() {
 
             setlibraryGames(prev =>
                 prev.map(g =>
-                    g.id === gameId
+                    g.game_id === gameId
                         ? {
                             ...g,
                             is_favored: !g.is_favored
@@ -313,8 +328,7 @@ export default function LibraryPage() {
     const grouped = groupMessagesByDate(currentMessages);
     /* ---------------- UI ---------------- */
 
-    console.log(storeGames[0]);
-    console.log(libraryGames[0]);
+    //console.log(libraryGames[0].playtime_minutes);
 
     return (
         <div className="layout">
@@ -533,14 +547,15 @@ export default function LibraryPage() {
                                         }
                                     />
 
-                                    <span>{game.title}</span>
-
+                                    <span className="game-title">{game.title}</span>
+                                    <span className="game-genre">{game.genre}</span>
+                                    <span className="game-playtime">Total: {game.playtime_minutes / 60 } hrs</span>
                                     <div className="game-actions">
 
                                         <button
                                             onClick={() => toggleFavorite(game.game_id)}
                                         >
-                                            ★
+                                            ☆
                                         </button>
 
                                         <button
@@ -550,6 +565,13 @@ export default function LibraryPage() {
                                             }
                                         >
                                             Starten
+                                        </button>
+
+                                        <button
+                                            onClick={() => removeFromLibrary(game.game_id)}
+                                            className="remove-btn"
+                                        >
+                                            Entfernen
                                         </button>
 
                                     </div>
@@ -578,7 +600,6 @@ export default function LibraryPage() {
                                     />
 
                                     <span>{game.title}</span>
-
                                     <div className="game-actions">
 
                                         <button
@@ -594,6 +615,13 @@ export default function LibraryPage() {
                                             }
                                         >
                                             Starten
+                                        </button>
+
+                                        <button
+                                            onClick={() => removeFromLibrary(game.game_id)}
+                                            className="remove-btn"
+                                        >
+                                            Entfernen
                                         </button>
 
                                     </div>
@@ -623,8 +651,8 @@ export default function LibraryPage() {
                                     }
                                 />
 
-                                <span>{game.title}</span>
-
+                                <span className="game-title">{game.title}</span>
+                                <span className="game-genre">{game.genre}</span>
                                 {isInLibrary(game.game_id) ? (
 
                                     <button

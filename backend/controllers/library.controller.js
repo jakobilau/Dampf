@@ -51,7 +51,7 @@ exports.addToLibrary = async (req, res) => {
 exports.removeFromLibrary = async (req, res) => {
     try {
         await db.query(`
-            DELETE FROM library
+            DELETE FROM library_entries
             WHERE user_id = ?
             AND game_id = ?
         `, [
@@ -92,7 +92,7 @@ exports.addPlaytime = async (req, res) => {
         const { minutes } = req.body;
 
         await db.query(`
-            UPDATE library
+            UPDATE library_entries
             SET playtime_minutes = playtime_minutes + ?
             WHERE user_id = ?
             AND game_id = ?
