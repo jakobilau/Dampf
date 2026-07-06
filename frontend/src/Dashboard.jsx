@@ -25,13 +25,15 @@ export default function Dashboard() {
         fetchDashboard();
     }, []);
 
-    const formatPlaytime = (seconds) => {
-        if (!seconds && seconds !== 0) return "0h";
+    const formatPlaytime = (minutes) => {
+        if (!minutes && minutes !== 0) return "0m";
 
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
 
         if (h === 0) return `${m}m`;
+        if (m === 0) return `${h}h`;
+
         return `${h}h ${m}m`;
     };
 

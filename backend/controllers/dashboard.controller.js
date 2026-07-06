@@ -32,13 +32,14 @@ exports.getPublisherDashboard = async (req, res) => {
       GROUP BY
           g.game_id,
           g.title,
-          g.genre
+          g.genre,
+          g.folder_name
 
       ORDER BY g.title
       `,
       [publisherId]
     );
-
+    console.log(rows);
     res.json(rows);
 
   } catch (err) {

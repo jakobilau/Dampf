@@ -4,6 +4,8 @@ import { useMessages } from "./messages/useMessages";
 import { apiFetch } from "./api/apiFetch";
 import { useNavigate } from "react-router-dom";
 import "./LibraryPage.css";
+import { useSocket } from "./socket/SocketProvider";
+import { useFriendPopup } from "./socket/hooks/useFriendPopup"
 
 export default function LibraryPage() {
     const { user } = useAuth();
@@ -22,8 +24,9 @@ export default function LibraryPage() {
     const [activeChatUser, setActiveChatUser] = useState(null);
     const [messages, setMessages] = useState({});
     const [chatInput, setChatInput] = useState("");
-
+    const socket = useSocket();
     const [storeQuery, setStoreQuery] = useState("");
+    const { popup, setPopup } = useFriendPopup();
 
     const activeChatRef = useRef(null);
 
@@ -105,7 +108,15 @@ export default function LibraryPage() {
     };
     /* ---------------- FRIENDS ---------------- */
 
-    const sendFriendRequest = (user) => {
+    const sendFriendRequest = (receiver) => {
+        socket.emit("friend_request_live", {
+            toUserId: receiver.user_id,
+
+            fromUser: {
+                user_id: user.user_id,
+                username: user.username
+            }
+        });
         setSentRequests((prev) => [...prev, user.id]);
     };
 
@@ -325,6 +336,7 @@ export default function LibraryPage() {
     //console.log(libraryGames[0].playtime_minutes);
 
     return (
+
         <div className="layout">
             <aside className="friends-panel">
                 <div className="profile-tile">
@@ -609,7 +621,9 @@ export default function LibraryPage() {
                                         }
                                     />
 
-                                    <span>{game.title}</span>
+                                    <span className="game-title">{game.title}</span>
+                                    <span className="game-genre">{game.genre}</span>
+                                    <span className="game-playtime">Total: {game.playtime_minutes / 60} hrs</span>
                                     <div className="game-actions">
 
                                         <button
@@ -723,6 +737,33 @@ export default function LibraryPage() {
                     </div>
                 )
             }
+            {popup && (
+                <div className="popup-overlay">
+                    <div className="friend-request-popup">
+
+                        <p>
+                            {popup.user.username} möchte Freund werden
+                        </p>
+
+                        <div className="popup-buttons">
+
+                            <button
+                                onClick={() => setPopup(null)}
+                            >
+                                Annehmen
+                            </button>
+
+                            <button
+                                onClick={() => setPopup(null)}
+                            >
+                                Ablehnen
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
         </div >
     );
 }
