@@ -5,12 +5,6 @@ import { apiFetch } from "./api/apiFetch";
 import { useNavigate } from "react-router-dom";
 import "./LibraryPage.css";
 
-const gamesLibrary = [
-    { id: 1, title: "Minecraft" },
-    { id: 2, title: "Terraria" },
-];
-
-
 export default function LibraryPage() {
     const { user } = useAuth();
     const currentUserId = user?.user_id;
@@ -353,6 +347,15 @@ export default function LibraryPage() {
                             {activeChatUser?.username || user?.username || "Unknown"}
                         </span>
                     </div>
+
+                    {!activeChatUser && user?.role === "publisher" && (
+                        <button
+                            className="dashboard-btn"
+                            onClick={() => navigate("/dashboard")}
+                        >
+                            Dashboard
+                        </button>
+                    )}
                 </div>
                 {activeChatUser && (
                     <div className="chat-view">
@@ -549,7 +552,7 @@ export default function LibraryPage() {
 
                                     <span className="game-title">{game.title}</span>
                                     <span className="game-genre">{game.genre}</span>
-                                    <span className="game-playtime">Total: {game.playtime_minutes / 60 } hrs</span>
+                                    <span className="game-playtime">Total: {game.playtime_minutes / 60} hrs</span>
                                     <div className="game-actions">
 
                                         <button
@@ -559,11 +562,18 @@ export default function LibraryPage() {
                                         </button>
 
                                         <button
-                                            onClick={() =>
+                                            onClick={() => {
+                                                localStorage.setItem(
+                                                    "active_game_session",
+                                                    JSON.stringify({
+                                                        game_id: game.game_id,
+                                                        started_at: Date.now()
+                                                    })
+                                                );
                                                 window.location.href =
-                                                `https://10.72.100.35${game.folder_name}index.html`
+                                                    `https://10.72.100.35${game.folder_name}index.html`
                                             }
-                                        >
+                                            }>
                                             Starten
                                         </button>
 
@@ -609,9 +619,17 @@ export default function LibraryPage() {
                                         </button>
 
                                         <button
-                                            onClick={() =>
+                                            onClick={() => {
+                                                localStorage.setItem(
+                                                    "active_game_session",
+                                                    JSON.stringify({
+                                                        game_id: game.game_id,
+                                                        started_at: Date.now()
+                                                    })
+                                                );
                                                 window.location.href =
-                                                `https://10.72.100.35${game.folder_name}index.html`
+                                                    `https://10.72.100.35${game.folder_name}index.html`
+                                            }
                                             }
                                         >
                                             Starten
@@ -682,27 +700,29 @@ export default function LibraryPage() {
                 )}
 
             </main>
-            {friendRequest && (
-                <div className="popup-overlay">
-                    <div className="friend-request-popup">
-                        <h3>Freundschaftsanfrage</h3>
+            {
+                friendRequest && (
+                    <div className="popup-overlay">
+                        <div className="friend-request-popup">
+                            <h3>Freundschaftsanfrage</h3>
 
-                        <p>
-                            <strong>{friendRequest.username}</strong> möchte dich als Freund hinzufügen.
-                        </p>
+                            <p>
+                                <strong>{friendRequest.username}</strong> möchte dich als Freund hinzufügen.
+                            </p>
 
-                        <div className="popup-buttons">
-                            <button onClick={acceptFriendRequest}>
-                                Ja
-                            </button>
+                            <div className="popup-buttons">
+                                <button onClick={acceptFriendRequest}>
+                                    Ja
+                                </button>
 
-                            <button onClick={declineFriendRequest}>
-                                Nein
-                            </button>
+                                <button onClick={declineFriendRequest}>
+                                    Nein
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

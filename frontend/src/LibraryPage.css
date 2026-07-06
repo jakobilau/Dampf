@@ -412,3 +412,17 @@
 .send-btn svg {
     display: block;
 }
+
+.dashboard-btn {
+    margin-left: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    background: #4a90e2;
+    color: white;
+    cursor: pointer;
+}
+
+.dashboard-btn:hover {
+    background: #3b78c2;
+}

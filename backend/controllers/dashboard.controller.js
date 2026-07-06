@@ -10,7 +10,7 @@ exports.getPublisherDashboard = async (req, res) => {
           g.game_id,
           g.title,
           g.genre,
-
+          g.folder_name,
           COUNT(le.user_id) AS library_count,
 
           COALESCE(SUM(

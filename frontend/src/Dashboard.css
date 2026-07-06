@@ -1,0 +1,45 @@
+
+.dashboard-container {
+    padding: 20px;
+    color: white;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.dashboard-card {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.game-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.game-cover {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.metrics {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metric {
+    display: flex;
+    justify-content: space-between;
+    background: #2a2a2a;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
