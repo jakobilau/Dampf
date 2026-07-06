@@ -7,6 +7,12 @@ export default defineConfig({
   VitePWA({
     registerType: 'autoUpdate',
 
+    workbox: {
+    navigateFallbackExclude: [
+      /^\/games\//
+    ],
+  },
+
     manifest: {
       name: "Dampf",
       short_name: "Dampf",
