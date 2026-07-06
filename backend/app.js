@@ -16,6 +16,7 @@ app.use("/api/messages", require("./routes/messages.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
 app.use("/api/games", require("./routes/games.routes"));
 app.use("/api/library", require("./routes/library.routes"));
+app.use("/api/dashboard", require("./routes/dashboard.routes"));
 
 app.use(
     "/uploads",

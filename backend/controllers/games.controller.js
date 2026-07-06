@@ -36,3 +36,22 @@ exports.getGame = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+exports.deleteGame = async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `DELETE FROM games WHERE game_id = ?`,
+      [req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Game not found" });
+    }
+
+    res.json({ message: "Game deleted" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

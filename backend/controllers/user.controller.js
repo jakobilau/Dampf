@@ -34,3 +34,29 @@ exports.searchUsers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (req.user.id == userId) {
+      return res.status(400).json({ message: "You cannot delete yourself" });
+    }
+
+    const [result] = await db.query(
+      "DELETE FROM users WHERE user_id = ?",
+      [userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User deleted (banned)" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
