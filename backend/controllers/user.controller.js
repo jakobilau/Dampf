@@ -1,5 +1,28 @@
 const db = require("../db");
 
+exports.getUsers = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT
+        user_id,
+        username,
+        email,
+        role,
+        profile_image_path
+      FROM users
+      ORDER BY username ASC
+      `
+    );
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 exports.searchUsers = async (req, res) => {
   try {
     const { query } = req.query;

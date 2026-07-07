@@ -12,6 +12,13 @@ router.get(
     userController.searchUsers
 );
 
+// alle User bekommen (Admin)
+router.get(
+    "/",
+    auth,
+    userController.getUsers
+);
+
 // DELETE USER (admin only)
 router.delete(
     "/:id",
