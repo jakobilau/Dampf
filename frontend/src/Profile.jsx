@@ -76,7 +76,7 @@ export default function Profil() {
                 <img
                     src={
                         profileImage ||
-                        `https://10.72.100.35${user.profile_image_path || '/uploads/avatars/default.jpg'}`
+                        `${user.profile_image_path || '/uploads/avatars/default.jpg'}`
                     }
                     alt="Profilbild"
                     style={styles.image}

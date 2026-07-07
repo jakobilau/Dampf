@@ -53,8 +53,8 @@ export default function Dashboard() {
                             <img
                                 src={
                                     game.folder_name
-                                        ? `https://10.72.100.35${game.folder_name}display.png`
-                                        : "https://10.72.100.35/games/under_construction.png"
+                                        ? `${game.folder_name}display.png`
+                                        : "/games/under_construction.png"
                                 }
                                 alt={game.title}
                                 className="game-cover"

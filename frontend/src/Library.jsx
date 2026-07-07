@@ -354,7 +354,7 @@ export default function LibraryPage() {
                     <img
                         alt="Profilbild"
                         className="profile-avatar"
-                        src={`https://10.72.100.35${activeChatUser?.profile_image_path
+                        src={`${activeChatUser?.profile_image_path
                             ? activeChatUser.profile_image_path
                             : "/uploads/avatars/default.jpg"
                             }`}
@@ -452,7 +452,7 @@ export default function LibraryPage() {
                                         className="friend-item"
                                         onClick={() => openChat(f)}
                                     >
-                                        <img className="profile-avatar" src={`https://10.72.100.35${f.profile_image_path || '/uploads/avatars/default.jpg'}`} />
+                                        <img className="profile-avatar" src={`${f.profile_image_path || '/uploads/avatars/default.jpg'}`} />
                                         <p>{f.username}</p>
                                     </li>
                                 ))}
@@ -568,8 +568,8 @@ export default function LibraryPage() {
                                         className="game-cover"
                                         src={
                                             game.folder_name
-                                                ? `https://10.72.100.35${game.folder_name}display.png`
-                                                : `https://10.72.100.35/games/under_construction.png`
+                                                ? `${game.folder_name}display.png`
+                                                : "/games/under_construction.png"
                                         }
                                     />
 
@@ -594,7 +594,7 @@ export default function LibraryPage() {
                                                     })
                                                 );
                                                 window.location.href =
-                                                    `https://10.72.100.35${game.folder_name}index.html`
+                                                    `${game.folder_name}index.html`
                                             }
                                             }>
                                             Starten
@@ -627,8 +627,8 @@ export default function LibraryPage() {
                                         className="game-cover"
                                         src={
                                             game.folder_name
-                                                ? `https://10.72.100.35${game.folder_name}display.png`
-                                                : `https://10.72.100.35/games/under_construction.png`
+                                                ? `${game.folder_name}display.png`
+                                                : "/games/under_construction.png"
                                         }
                                     />
 
@@ -653,7 +653,7 @@ export default function LibraryPage() {
                                                     })
                                                 );
                                                 window.location.href =
-                                                    `https://10.72.100.35${game.folder_name}index.html`
+                                                    `${game.folder_name}index.html`
                                             }
                                             }
                                         >
@@ -689,8 +689,8 @@ export default function LibraryPage() {
                                     className="game-cover"
                                     src={
                                         game.folder_name
-                                            ? `https://10.72.100.35${game.folder_name}display.png`
-                                            : `https://10.72.100.35/games/under_construction.png`
+                                            ? `${game.folder_name}display.png`
+                                            : "/games/under_construction.png"
                                     }
                                 />
 
