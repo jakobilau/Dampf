@@ -379,15 +379,6 @@ export default function LibraryPage() {
                             Dashboard
                         </button>
                     )}
-
-                    {!activeChatUser && user?.role === "admin" && (
-                        <button
-                            className="dashboard-btn"
-                            onClick={() => navigate("/admin")}
-                        >
-                            Admin-Panel
-                        </button>
-                    )}
                 </div>
                 {activeChatUser && (
                     <div className="chat-view">
