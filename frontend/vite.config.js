@@ -7,15 +7,15 @@ export default defineConfig({
   VitePWA({
     registerType: 'autoUpdate',
 
-  workbox: {
-    cleanupOutdatedCaches: true,
+    workbox: {
+      cleanupOutdatedCaches: true,
 
-    navigateFallback: "/index.html",
+      navigateFallback: "/index.html",
 
-    navigateFallbackDenylist: [
-      /^\/games\//
-    ]
-  },
+      navigateFallbackDenylist: [
+        /^\/games\//
+      ]
+    },
 
     manifest: {
       name: "Dampf",
@@ -58,8 +58,19 @@ export default defineConfig({
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,
         secure: false
+      },
+      '/uploads': {
+        target: 'https://ais-b.studlp2.hshl.de',
+        changeOrigin: true,
+        secure: false
+      },
+      '/games': {
+        target: 'https://ais-b.studlp2.hshl.de',
+        changeOrigin: true,
+        secure: false
       }
     }
+
   }
 })
 

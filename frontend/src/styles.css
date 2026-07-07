@@ -7,13 +7,14 @@
 }
 
 body {
-    background-color: rgb(26, 26, 65);
+    background-color: #1a1a1a;
     color: white
 }
 
 .form-container {
     border-radius: 0.4em;
-    background-color: rgb(22, 22, 102);
+    background: #202020;
+    border: 1px solid #383838;
     display: flex;
     flex-direction: column;
     padding: 1em;
@@ -40,7 +41,7 @@ form>input {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: rgb(26, 26, 65);
+    background-color: #1a1a1a;
 
 }
 
@@ -62,9 +63,81 @@ button:hover {
     border: none;
 }
 
-.back-btn svg{
+.back-btn svg {
     display: block;
 }
 
 
 
+.profile-input-container input {
+    height: 50px;
+    padding: 0.1em 0.6em;
+    width: 100%;
+}
+
+.profile-input-container h3 {
+    padding-bottom: 1em;
+}
+
+.profile-wrapper .back-btn {
+    align-self: flex-start;
+}
+
+.profile-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-wrapper {
+    width: 50%;
+    background-color: rgb(32, 32, 32);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+
+.profile-wrapper h2 {
+    font-size: 18px;
+    align-self: center;
+}
+
+.profile-wrapper img {
+    align-self: center;
+}
+
+.profile-wrapper h2 {
+    align-self: center;
+}
+
+.profile-wrapper h2 {
+    align-self: center;
+}
+
+.file-upload {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #333;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.file-upload input {
+    display: none;
+}
+
+#profile-picture-upload {
+    align-self: center;
+}
+
+input,
+textarea {
+    background-color: #2b2b2b;
+    border: 1px solid #333;
+    color: white;
+
+}

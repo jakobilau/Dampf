@@ -1,5 +1,5 @@
 import { apiFetch } from "./api/apiFetch";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthProvider";
 
@@ -8,10 +8,9 @@ export default function Profil() {
     const { user } = useAuth();
     const { logout } = useAuth();
     const [profileImage, setProfileImage] = useState(null);
-    const [bio, setBio] = useState(user.biography);
-    const [username, setUsername] = useState(user.username);
+    const [bio, setBio] = useState("");
+    const [username, setUsername] = useState("");
     const navigate = useNavigate();
-    // Bild auswählen
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -34,7 +33,6 @@ export default function Profil() {
         return data.avatar_url;
     };
 
-    // Bio speichern
     const handleBioChange = (e) => {
         setBio(e.target.value);
     };
@@ -52,27 +50,35 @@ export default function Profil() {
             })
         });
 
-        console.log("Gespeicherte Bio:", bio);
-        console.log("Profilbild:", profileImage);
     };
 
-    // Logout
     const handleLogout = () => {
         logout();
         navigate("/login")
     };
 
-    console.log(user);
-
+    useEffect(() => {
+        async function updateUser() {
+            try {
+                const res = await apiFetch("/api/auth/me");
+                setBio(res.biography);
+                setUsername(res.username);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        updateUser();
+    }, []);
 
     return (
-
-        < div style={styles.container} >
-            <button onClick={() => navigate("/library")}>Back</button>
-            <h2>Profil bearbeiten</h2>
-
-            {/* Profilbild */}
-            <div style={styles.section}>
+        < div className="profile-container"  >
+            < div className="profile-wrapper" style={styles.container} >
+                <button className="back-btn" onClick={() => navigate("/library")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                    </svg>
+                </button>
+                <h2>Edit Profile</h2>
                 <img
                     src={
                         profileImage ||
@@ -82,37 +88,33 @@ export default function Profil() {
                     style={styles.image}
                 />
 
-                <input type="file" accept="image/*" onChange={handleImageChange} />
-            </div>
-            <div style={styles.section}>
-                <h3>Username</h3>
-                <input
-                    value={username}
-                    onChange={handleUsernameChange}
-                    style={styles.textarea}
-                />
-            </div>
-            {/* Bio */}
-            <div style={styles.section}>
-                <h3>Bio</h3>
-                <textarea
-                    value={bio}
-                    onChange={handleBioChange}
-                    style={styles.textarea}
-                />
-            </div>
+                <input id="profile-picture-upload" type="file" accept="image/*" onChange={handleImageChange} />
+                <div className="profile-input-container" style={styles.section}>
+                    <h3>Username</h3>
+                    <input
+                        value={username}
+                        onChange={handleUsernameChange}
+                    />
+                </div>
+                <div className="profile-input-container" style={styles.section}>
+                    <h3>Biography</h3>
+                    <textarea
+                        value={bio}
+                        onChange={handleBioChange}
+                        style={styles.textarea}
+                    />
+                </div>
+                <div style={styles.buttonRow}>
+                    <button onClick={saveProfile} style={styles.saveBtn}>
+                        Save
+                    </button>
 
-            {/* Buttons */}
-            <div style={styles.buttonRow}>
-                <button onClick={saveProfile} style={styles.saveBtn}>
-                    Speichern
-                </button>
-
-                <button onClick={handleLogout} style={styles.logoutBtn}>
-                    Logout
-                </button>
-            </div>
-        </div >
+                    <button onClick={handleLogout} style={styles.logoutBtn}>
+                        Logout
+                    </button>
+                </div>
+            </div >
+        </div>
     );
 }
 
@@ -121,7 +123,6 @@ const styles = {
         maxWidth: "500px",
         margin: "0 auto",
         padding: "20px",
-        fontFamily: "Arial",
     },
     section: {
         marginBottom: "20px",

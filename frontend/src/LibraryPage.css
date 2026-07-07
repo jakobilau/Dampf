@@ -9,10 +9,6 @@
     color: white;
 }
 
-/* ===================== */
-/* LEFT PANEL (FRIENDS)  */
-/* ===================== */
-
 .friends-panel {
     width: 280px;
     display: flex;
@@ -119,37 +115,178 @@
 }
 
 .tabs button.active {
-    background: #4f46e5;
+    background: white;
+    color: #2b2b2b;
 }
 
-/* Games grid */
+main h3 {
+    margin: 2em 0em;
+}
+
+.library-button,
+.library-button-added {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    color: white;
+    background: rgba(255, 255, 255, 0.255);
+    border: none;
+}
+
+img[src="/games/under_construction.png"] {
+    opacity: 0.1;
+}
+
+.library-button-added {}
+
+.fav-toggle-btn svg {
+    display: block;
+    margin-left: 5px;
+}
+
+.library-button {}
+
+.fav-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 1em;
+}
+
 .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns:
+        repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
+
 }
 
-.game-tile {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-
-    padding: 1rem;
-    border-radius: 12px;
-    background: #2b2b2b;
-    transition: transform 0.15s;
+.profile-name:hover {
+    text-decoration: underline;
     cursor: pointer;
 }
 
-.game-tile:hover {
-    transform: translateY(-4px);
+.game-tile {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #222;
+    transition: transform .2s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+        position: relative;
+    overflow: hidden;
 }
 
 .game-cover {
     width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #202020, #2b2b2b);
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-overlay {
+    opacity: 0;
+    pointer-events: none;
+
+    position: absolute;
+    inset: 0;
+
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    background: linear-gradient(
+        transparent,
+        rgba(0, 0, 0, .7)
+    );
+
+    transition: opacity 0.2s ease;
+}
+
+.game-tile:hover .game-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.game-upper-half {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.game-lower-half {
+    flex: 1;
+    display: flex;
+}
+
+.game-actions {
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, .15);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.play-button:hover{
+    background: rgba(255, 255, 255, .30);
+}
+
+.game-details {
+    align-self: flex-end;
+    overflow: hidden;
+    margin-right: auto;
+}
+
+.game-title {
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+h3 {
+    font-size: 16px;
+}
+
+.game-genre {
+    color: #bbb;
+    margin-top: .25rem;
+    font-size: 0.8rem;
+}
+
+.game-playtime {
+    color: #bbb;
+    margin-top: .25rem;
+    font-size: 0.8rem;
+}
+
+
+.remove-btn {
+    background: rgba(255, 255, 255, .15);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+
+.remove-btn:hover {
+    background: #d33;
 }
 
 .friends-header {
@@ -162,15 +299,12 @@
 .add-btn {
     width: 32px;
     height: 32px;
-
     border: none;
     border-radius: 8px;
-
     background: #2b2b2b;
     color: white;
     font-size: 20px;
     cursor: pointer;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -181,7 +315,7 @@
 }
 
 .add-btn.active {
-    background: #4f46e5;
+    background: #2b2b2b;
 }
 
 .chat-view {
@@ -283,14 +417,14 @@
     border: none;
     border-radius: 6px;
 
-    background: #4f46e5;
+    background: #2b2b2b;
     color: white;
 
     cursor: pointer;
 }
 
 .add-btn-small:hover {
-    background: #4338ca;
+    background: #2b2b2b;
 }
 
 .user-item button {
@@ -298,15 +432,16 @@
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    background: #3b82f6;
-    color: white;
+    background: white;
+    color: #2b2b2b;
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
-.user-item button:hover:not(:disabled) {
-    background: #2563eb;
+.cat-sep {
+    margin-top: 2em;
 }
+
 
 /* SENT STATE */
 .user-item button:disabled {
@@ -349,8 +484,6 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
     display: flex;
-    justify-content: center;
-    align-items: center;
     z-index: 1000;
 }
 
@@ -382,7 +515,7 @@
 }
 
 .back-btn svg {
-    display: block;
+    display: block
 }
 
 .chat-msg-time {
@@ -426,3 +559,4 @@
 .dashboard-btn:hover {
     background: #3b78c2;
 }
+

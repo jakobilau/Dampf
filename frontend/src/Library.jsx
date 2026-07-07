@@ -342,9 +342,6 @@ export default function LibraryPage() {
         ? messages[activeChatUser.user_id] || []
         : [];
     const grouped = groupMessagesByDate(currentMessages);
-    /* ---------------- UI ---------------- */
-
-    //console.log(libraryGames[0].playtime_minutes);
 
     return (
 
@@ -354,10 +351,12 @@ export default function LibraryPage() {
                     <img
                         alt="Profilbild"
                         className="profile-avatar"
-                        src={`${activeChatUser?.profile_image_path
-                            ? activeChatUser.profile_image_path
-                            : "/uploads/avatars/default.jpg"
-                            }`}
+                        src={
+                            activeChatUser?.profile_image_path ||
+                            user?.profile_image_path ||
+                            "/uploads/avatars/default.jpg"
+                        }
+
                     />
 
                     <div
@@ -371,14 +370,17 @@ export default function LibraryPage() {
                         </span>
                     </div>
 
-                    {!activeChatUser && user?.role === "publisher" && (
-                        <button
-                            className="dashboard-btn"
-                            onClick={() => navigate("/dashboard")}
-                        >
-                            Dashboard
-                        </button>
-                    )}
+                    {!activeChatUser &&
+                        (user?.role === "publisher" || user?.role === "admin") && (
+                            <button
+                                className="dashboard-btn"
+                                onClick={() =>
+                                    navigate(user.role === "admin" ? "/admin" : "/dashboard")
+                                }
+                            >
+                                {user.role === "admin" ? "Admin-Panel" : "Dashboard"}
+                            </button>
+                        )}
                 </div>
                 {activeChatUser && (
                     <div className="chat-view">
@@ -430,7 +432,7 @@ export default function LibraryPage() {
                 {!activeChatUser && (
                     <>
                         <div className="friends-header">
-                            <h2>Freundesliste</h2>
+                            <h2>Friends</h2>
 
                             <button
                                 className={`add-btn ${addFriendMode ? "active" : ""}`}
@@ -486,15 +488,15 @@ export default function LibraryPage() {
                                         setSearchSubmitted(false);
                                     }}
                                     onKeyDown={handleFriendSearchKey}
-                                    placeholder="User suchen..."
+                                    placeholder="Search users..."
                                     autoFocus
                                 />
 
                                 <div className="search-results">
 
-                                    {searchResults.length === 0 && (
-                                        <p style={{ color: "#888" }}>
-                                            Keine Nutzer gefunden
+                                    {searchResults.length === 0 && searchSubmitted && (
+                                        <p style={{ color: "#888", fontSize: "14px" }}>
+                                            No user found
                                         </p>
                                     )}
 
@@ -525,7 +527,7 @@ export default function LibraryPage() {
                         className={activeTab === "library" ? "active" : ""}
                         onClick={() => setActiveTab("library")}
                     >
-                        Bibliothek
+                        Library
                     </button>
 
                     <button
@@ -542,21 +544,17 @@ export default function LibraryPage() {
                         value={storeQuery}
                         onChange={(e) => setStoreQuery(e.target.value)}
                         onKeyDown={handleStoreSearchKey}
-                        placeholder="Spiele suchen..."
+                        placeholder="Search games..."
                     />
                 )}
 
-                <h2>
-                    {activeTab === "library"
-                        ? "Spielebibliothek"
-                        : "Store"}
-                </h2>
+
 
                 {activeTab === "library" ? (
 
                     <>
 
-                        <h3>Favoriten</h3>
+                        <h3>FAVORITES ({favoriteGames.length})</h3>
 
                         <div className="games-grid">
 
@@ -573,49 +571,57 @@ export default function LibraryPage() {
                                         }
                                     />
 
-                                    <span className="game-title">{game.title}</span>
-                                    <span className="game-genre">{game.genre}</span>
-                                    <span className="game-playtime">Total: {game.playtime_minutes / 60} hrs</span>
-                                    <div className="game-actions">
+                                    <div className="game-overlay">
+                                        <div className="game-upper-half">
+                                            <button
+                                                className="remove-btn"
+                                                onClick={() => removeFromLibrary(game.game_id)}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                        <div className="game-lower-half">
+                                            <div className="game-details">
+                                                <div className="game-title">
+                                                    {game.title}
+                                                    <button className="fav-toggle-btn" onClick={() => toggleFavorite(game.game_id)}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z" /></svg>
+                                                    </button>
+                                                </div>
+                                                <div className="game-genre">
+                                                    {game.genre}
+                                                </div>
+                                                <div className="game-playtime">
+                                                    Total: {game.playtime_minutes / 60} hrs
+                                                </div>
+                                            </div>
+                                            <div className="game-actions">
+                                                <button
+                                                    className="play-button"
+                                                    onClick={() => {
+                                                        localStorage.setItem(
+                                                            "active_game_session",
+                                                            JSON.stringify({
+                                                                game_id: game.game_id,
+                                                                started_at: Date.now()
+                                                            })
+                                                        );
 
-                                        <button
-                                            onClick={() => toggleFavorite(game.game_id)}
-                                        >
-                                            ☆
-                                        </button>
-
-                                        <button
-                                            onClick={() => {
-                                                localStorage.setItem(
-                                                    "active_game_session",
-                                                    JSON.stringify({
-                                                        game_id: game.game_id,
-                                                        started_at: Date.now()
-                                                    })
-                                                );
-                                                window.location.href =
-                                                    `${game.folder_name}index.html`
-                                            }
-                                            }>
-                                            Starten
-                                        </button>
-
-                                        <button
-                                            onClick={() => removeFromLibrary(game.game_id)}
-                                            className="remove-btn"
-                                        >
-                                            Entfernen
-                                        </button>
-
+                                                        window.location.href =
+                                                            `${game.folder_name}index.html`;
+                                                    }}
+                                                >
+                                                    ▶
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-
                                 </div>
-
                             ))}
 
                         </div>
 
-                        <h3>Alle Spiele</h3>
+                        <h3 className="cat-sep">UNCATEGORIZED ({normalGames.length})</h3>
 
                         <div className="games-grid">
 
@@ -632,45 +638,52 @@ export default function LibraryPage() {
                                         }
                                     />
 
-                                    <span className="game-title">{game.title}</span>
-                                    <span className="game-genre">{game.genre}</span>
-                                    <span className="game-playtime">Total: {game.playtime_minutes / 60} hrs</span>
-                                    <div className="game-actions">
+                                    <div className="game-overlay">
+                                        <div className="game-upper-half">
+                                            <button
+                                                className="remove-btn"
+                                                onClick={() => removeFromLibrary(game.game_id)}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                        <div className="game-lower-half">
+                                            <div className="game-details">
+                                                <div className="game-title">
+                                                    {game.title}
+                                                    <button className="fav-toggle-btn" onClick={() => toggleFavorite(game.game_id)}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z" /></svg>
+                                                    </button>
+                                                </div>
+                                                <div className="game-genre">
+                                                    {game.genre}
+                                                </div>
+                                                <div className="game-playtime">
+                                                    Total: {game.playtime_minutes / 60} hrs
+                                                </div>
+                                            </div>
+                                            <div className="game-actions">
+                                                <button
+                                                    className="play-button"
+                                                    onClick={() => {
+                                                        localStorage.setItem(
+                                                            "active_game_session",
+                                                            JSON.stringify({
+                                                                game_id: game.game_id,
+                                                                started_at: Date.now()
+                                                            })
+                                                        );
 
-                                        <button
-                                            onClick={() => toggleFavorite(game.game_id)}
-                                        >
-                                            ☆
-                                        </button>
-
-                                        <button
-                                            onClick={() => {
-                                                localStorage.setItem(
-                                                    "active_game_session",
-                                                    JSON.stringify({
-                                                        game_id: game.game_id,
-                                                        started_at: Date.now()
-                                                    })
-                                                );
-                                                window.location.href =
-                                                    `${game.folder_name}index.html`
-                                            }
-                                            }
-                                        >
-                                            Starten
-                                        </button>
-
-                                        <button
-                                            onClick={() => removeFromLibrary(game.game_id)}
-                                            className="remove-btn"
-                                        >
-                                            Entfernen
-                                        </button>
-
+                                                        window.location.href =
+                                                            `${game.folder_name}index.html`;
+                                                    }}
+                                                >
+                                                    ▶
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-
                                 </div>
-
                             ))}
 
                         </div>
@@ -694,27 +707,47 @@ export default function LibraryPage() {
                                     }
                                 />
 
-                                <span className="game-title">{game.title}</span>
-                                <span className="game-genre">{game.genre}</span>
-                                {isInLibrary(game.game_id) ? (
+                                <div className="game-overlay">
 
-                                    <button
-                                        className="library-button added"
-                                        disabled
-                                    >
-                                        ✓ In Bibliothek
-                                    </button>
+                                    <div className="game-lower-half">
 
-                                ) : (
+                                        <div className="game-details">
+                                            <div className="game-title">
+                                                {game.title}
+                                            </div>
 
-                                    <button
-                                        className="library-button"
-                                        onClick={() => addToLibrary(game.game_id)}
-                                    >
-                                        + Hinzufügen
-                                    </button>
+                                            <div className="game-genre">
+                                                {game.genre}
+                                            </div>
+                                        </div>
 
-                                )}
+                                        <div className="game-actions">
+
+                                            {isInLibrary(game.game_id) ? (
+
+                                                <button
+                                                    className="library-button-added"
+                                                    disabled
+                                                >
+                                                    ✓
+                                                </button>
+
+                                            ) : (
+
+                                                <button
+                                                    className="library-button"
+                                                    onClick={() => addToLibrary(game.game_id)}
+                                                >
+                                                    +
+                                                </button>
+
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
 
                             </div>
 

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "./api/apiFetch";
+import { useNavigate } from "react-router-dom";
 import "./Admin.css";
 
 export default function AdminPage() {
-
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [games, setGames] = useState([]);
 
@@ -43,11 +44,18 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="admin-page">
 
+
+
+        <div className="admin-page">
+            <button className="back-btn" onClick={() => {navigate("/library")}}>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
+                    <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                </svg>
+            </button>
             <div className="admin-column">
 
-                <h2>Spiele</h2>
+                <h2>GAMES ({games.length})</h2>
 
                 {games.map(game => (
 
@@ -59,7 +67,7 @@ export default function AdminPage() {
                             className="delete-btn"
                             onClick={() => deleteGame(game.game_id)}
                         >
-                            Löschen
+                            DELETE
                         </button>
 
                     </div>
@@ -70,7 +78,7 @@ export default function AdminPage() {
 
             <div className="admin-column">
 
-                <h2>Benutzer</h2>
+                <h2>USER ({users.length})</h2>
 
                 {users.map(user => (
 
@@ -82,7 +90,7 @@ export default function AdminPage() {
                             className="ban-btn"
                             onClick={() => banUser(user.user_id)}
                         >
-                            Sperren
+                            DELETE
                         </button>
 
                     </div>

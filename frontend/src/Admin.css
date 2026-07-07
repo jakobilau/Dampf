@@ -1,32 +1,37 @@
-.admin-page{
-    display:flex;
-    gap:40px;
-    padding:30px;
+.admin-page {
+    display: flex;
+    gap: 40px;
+    padding: 30px;
 }
 
-.admin-column{
-    flex:1;
-    background:#232323;
-    padding:20px;
-    border-radius:12px;
+.admin-column {
+    flex: 1;
+    background: #232323;
+    padding: 20px;
+    border-radius: 12px;
 }
 
-.admin-item{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:10px;
-    margin:10px 0;
-    background:#2f2f2f;
-    border-radius:8px;
+.admin-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 10px 0;
+    background: #2f2f2f;
+    border-radius: 8px;
 }
 
-.delete-btn{
-    background:#b30000;
-    color:white;
+
+
+.delete-btn {
+    color: rgb(201, 0, 0);
+    border: 1px solid rgb(201, 0, 0);
+        padding: 0.4em;
 }
 
-.ban-btn{
-    background:#d67b00;
-    color:white;
+.ban-btn {
+    color: rgb(201, 0, 0);
+    border: 1px solid rgb(201, 0, 0);
+        padding: 0.4em;
 }
+
