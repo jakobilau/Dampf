@@ -68,7 +68,7 @@ function resetRun() {
 }
 
 // virtual:/objects/level.js
-var { vec2, addLevel, rect, color, area, body, RED, GREEN, BLUE } = kaplay_default;
+var { vec2, addLevel, rect, color, area, body, RED, GREEN, BLUE, opacity } = kaplay_default;
 var TILE = 16;
 var ROOM = 5;
 var WALL = 1;
@@ -287,10 +287,10 @@ function buildLevel() {
     tileWidth: TILE,
     tileHeight: TILE,
     tiles: {
-      "#": () => [rect(TILE, TILE), color(RED), area(), body({ isStatic: true })],
-      "$": () => [rect(TILE, TILE), color(GREEN), area(), body({ isStatic: true })],
-      "%": () => [rect(TILE, TILE), color(BLUE), area(), body({ isStatic: true })],
-      "L": () => [rect(TILE, TILE), color(255, 140, 0)]
+      "#": () => [rect(TILE, TILE), color(RED), opacity(0), area(), body({ isStatic: true })],
+      "$": () => [rect(TILE, TILE), color(GREEN), opacity(0), area(), body({ isStatic: true })],
+      "%": () => [rect(TILE, TILE), color(BLUE), opacity(0), area(), body({ isStatic: true })],
+      "L": () => [rect(TILE, TILE), color(255, 140, 0), opacity(0)]
     }
   });
 }
@@ -473,14 +473,6 @@ function updateEnemies(playerPos) {
 var { add: add3, pos: pos3, rect: rect2, color: color4, z: z3, anchor: anchor3, destroy: destroy3 } = kaplay_default;
 var PICKUP_RANGE = 14;
 var ITEM_TYPES = {
-  sword: {
-    label: "sword",
-    color: [210, 210, 210],
-    onPickup(camera) {
-      camera.weapons.sword = true;
-      camera.currentWeapon = "sword";
-    }
-  },
   gun: {
     label: "gun",
     color: [255, 210, 60],
@@ -649,7 +641,7 @@ function rayCastAsciiGrid(origin, direction, grid2) {
     return false;
   }, d.len());
   const objects = [];
-  const perp = d.normal().unit().scale(0.35);
+  const perp = d.normal().unit().scale(0.15);
   for (const e of enemies) {
     if (e.dead) continue;
     const hit = raycastEdge(o, d, {
@@ -675,7 +667,7 @@ function rayCastAsciiGrid(origin, direction, grid2) {
       objects.push(hit);
     }
   }
-  const itemPerp = d.normal().unit().scale(0.3);
+  const itemPerp = d.normal().unit().scale(0.1);
   for (const it of items) {
     if (it.collected) continue;
     const hit2 = raycastEdge(o, d, {
@@ -706,7 +698,7 @@ var {
   rect: rect3,
   anchor: anchor4,
   area: area2,
-  opacity,
+  opacity: opacity2,
   body: body2,
   pushTransform,
   pushRotate,
@@ -727,7 +719,6 @@ var {
 } = kaplay_default;
 var ENEMY_COLOR = rgb(46, 139, 87);
 var PROJECTILE_COLOR2 = rgb(160, 32, 240);
-var VIEW_SCALE = 2;
 function createCamera() {
   return add4([
     pos4(playerSpawn.x, playerSpawn.y),
@@ -736,159 +727,532 @@ function createCamera() {
     rect3(8, 8),
     anchor4("center"),
     area2(),
-    opacity(0),
+    opacity2(0),
     body2(),
     {
       draw() {
+        const screenW = kaplay_default.width();
+        const screenH = kaplay_default.height();
         pushTransform();
         pushRotate(-this.angle);
-        drawCircle({
-          pos: vec25(),
-          radius: 4,
-          color: RED2
-        });
         const dir = Vec2.fromAngle(this.angle);
         const perp = dir.normal();
-        const planeP1 = this.pos.add(dir.scale(this.focalLength)).add(
-          perp.scale(this.fov)
-        ).sub(this.pos);
-        const planeP2 = this.pos.add(dir.scale(this.focalLength)).sub(
-          perp.scale(this.fov)
-        ).sub(this.pos);
-        drawLine({
-          p1: planeP1,
-          p2: planeP2,
-          width: 1,
-          color: RED2
-        });
-        pushTranslate(this.pos.scale(-1).add(410, 40));
-        pushScale(vec25(VIEW_SCALE, VIEW_SCALE));
+        const planeP1 = this.pos.add(dir.scale(this.focalLength)).add(perp.scale(this.fov)).sub(this.pos);
+        const planeP2 = this.pos.add(dir.scale(this.focalLength)).sub(perp.scale(this.fov)).sub(this.pos);
+        pushTranslate(this.pos.scale(-1));
         drawRect({
-          width: 240,
-          height: 120,
+          width: screenW,
+          height: screenH / 2,
           color: rgb(100, 100, 100)
         });
         drawRect({
-          pos: vec25(0, 120),
-          width: 240,
-          height: 120,
+          pos: vec25(0, screenH / 2),
+          width: screenW,
+          height: screenH / 2,
           color: rgb(128, 128, 128)
         });
-        for (let x = 0; x <= 120; x++) {
-          let direction = lerp(planeP1, planeP2, x / 120).scale(6);
+        for (let x = 0; x < screenW; x++) {
+          const direction = lerp(
+            planeP1,
+            planeP2,
+            x / (screenW - 1)
+          ).scale(6);
           const hit = rayCastAsciiGrid(this.pos, direction, grid);
           if (hit && hit.object) {
             const t = hit.t;
             const shade = (1 - t) * (hit.normal.x + hit.normal.y < 0 ? 0.5 : 1);
-            const h = 240 / (t * direction.len() / 16);
+            const h = screenH / (t * direction.len() / 16);
             drawRect({
-              width: 2,
+              width: 1,
               height: h,
-              pos: vec25(x * 2, 120 - h / 2),
+              pos: vec25(
+                x,
+                screenH / 2 - h / 2
+              ),
               color: (hit.object.color || WHITE).lerp(BLACK, Math.max(0, 1 - shade))
             });
           }
           if (hit.objects.length > 0) {
             hit.objects.sort((a, b) => b.t - a.t).forEach((o) => {
               if (hit.object && o.t > hit.t) return;
-              const wh = 240 / (o.t * direction.len() / 16);
+              const wh = screenH / (o.t * direction.len() / 16);
               const shade = 1 - o.t;
               if (o.projectile) {
                 const ph = 30 / (o.t * direction.len() / 16);
                 drawRect({
-                  width: 2,
+                  width: 1,
                   height: ph,
-                  pos: vec25(x * 2, 120 + wh / 2 - ph),
+                  pos: vec25(
+                    x,
+                    screenH / 2 + wh / 2 - ph
+                  ),
                   color: PROJECTILE_COLOR2.lerp(BLACK, Math.max(0, 1 - shade))
                 });
                 return;
               }
               if (o.item) {
-                const ih = 60 / (o.t * direction.len() / 16);
-                const itemType = ITEM_TYPES[o.item.item];
-                const itemColor = itemType ? rgb(...itemType.color) : WHITE;
+                const crystalHeight = 400 / (o.t * direction.len() / 16);
+                const crystalWidth = crystalHeight * 0.2;
+                const crystalX = x;
+                const crystalY = screenH / 2 + wh / 2 - crystalHeight;
                 drawRect({
-                  width: 2,
-                  height: ih,
-                  pos: vec25(x * 2, 120 + wh / 2 - ih),
-                  color: itemColor.lerp(BLACK, Math.max(0, 1 - shade))
+                  width: 1,
+                  height: crystalHeight,
+                  pos: vec25(
+                    crystalX,
+                    crystalY
+                  ),
+                  color: rgb(80, 220, 255).lerp(BLACK, Math.max(0, 1 - shade))
                 });
+                if (o.s > 0.35 && o.s < 0.65) {
+                  drawRect({
+                    width: 1,
+                    height: crystalHeight * 0.75,
+                    pos: vec25(
+                      crystalX,
+                      crystalY + crystalHeight * 0.12
+                    ),
+                    color: rgb(180, 255, 255).lerp(BLACK, Math.max(0, 1 - shade))
+                  });
+                  drawRect({
+                    width: 1,
+                    height: crystalHeight * 0.45,
+                    pos: vec25(
+                      crystalX + crystalWidth * 0.25,
+                      crystalY + crystalHeight * 0.3
+                    ),
+                    color: rgb(40, 140, 220).lerp(BLACK, Math.max(0, 1 - shade))
+                  });
+                  drawRect({
+                    width: 1,
+                    height: crystalHeight * 0.18,
+                    pos: vec25(
+                      crystalX - crystalWidth * 0.15,
+                      crystalY + crystalHeight * 0.15
+                    ),
+                    color: WHITE.lerp(BLACK, Math.max(0, 1 - shade))
+                  });
+                }
                 return;
               }
-              const oh = 140 / (o.t * direction.len() / 16);
-              const baseColor = o.enemy.hitFlash > 0 ? RED2 : ENEMY_COLOR;
+              const enemyHeight = 600 / (o.t * direction.len() / 16);
+              const enemyTop = screenH / 2 + wh / 2 - enemyHeight;
+              const enemyWidth = enemyHeight * 0.45;
               drawRect({
-                width: 2,
-                height: oh,
-                pos: vec25(x * 2, 120 + wh / 2 - oh),
-                color: baseColor.lerp(BLACK, Math.max(0, 1 - shade))
+                width: 1,
+                height: enemyHeight,
+                pos: vec25(
+                  x,
+                  enemyTop
+                ),
+                color: ENEMY_COLOR.lerp(BLACK, Math.max(0, 1 - shade))
               });
+              if (o.enemy) {
+                if (o.s > 0.45 && o.s < 0.55) {
+                  const faceX = x;
+                  const faceY = enemyTop + enemyHeight * 0.16;
+                  const eyeSize = enemyHeight * 0.13;
+                  const eyeY = faceY;
+                  const eyeOffset = enemyWidth * 0.24;
+                  drawRect({
+                    pos: vec25(
+                      faceX - eyeOffset,
+                      eyeY
+                    ),
+                    width: eyeSize,
+                    height: eyeSize,
+                    color: WHITE
+                  });
+                  drawRect({
+                    pos: vec25(
+                      faceX + eyeOffset - eyeSize,
+                      eyeY
+                    ),
+                    width: eyeSize,
+                    height: eyeSize,
+                    color: WHITE
+                  });
+                  drawRect({
+                    pos: vec25(
+                      faceX - eyeOffset + eyeSize * 0.3,
+                      eyeY + eyeSize * 0.2
+                    ),
+                    width: eyeSize * 0.4,
+                    height: eyeSize * 0.6,
+                    color: BLACK
+                  });
+                  drawRect({
+                    pos: vec25(
+                      faceX + eyeOffset - eyeSize * 0.7,
+                      eyeY + eyeSize * 0.2
+                    ),
+                    width: eyeSize * 0.4,
+                    height: eyeSize * 0.6,
+                    color: BLACK
+                  });
+                  drawRect({
+                    pos: vec25(
+                      faceX - enemyWidth * 0.3,
+                      faceY + enemyHeight * 0.22
+                    ),
+                    width: enemyWidth * 0.6,
+                    height: enemyHeight * 0.12,
+                    color: BLACK
+                  });
+                  drawRect({
+                    pos: vec25(
+                      faceX - enemyWidth * 0.2,
+                      faceY + enemyHeight * 0.22
+                    ),
+                    width: enemyWidth * 0.1,
+                    height: enemyHeight * 0.12,
+                    color: WHITE
+                  });
+                  drawRect({
+                    pos: vec25(
+                      faceX + enemyWidth * 0.1,
+                      faceY + enemyHeight * 0.22
+                    ),
+                    width: enemyWidth * 0.1,
+                    height: enemyHeight * 0.12,
+                    color: WHITE
+                  });
+                }
+              }
             });
           }
         }
+        const cx = screenW / 2;
+        const cy = screenH / 2;
+        const hudHeight = 50;
         if (this.muzzleFlash > 0) {
           drawRect({
-            width: 240,
-            height: 240,
+            width: screenW,
+            height: screenH,
             color: rgb(255, 255, 200),
             opacity: this.muzzleFlash * 1.5
           });
         }
-        drawRect({ pos: vec25(120, 235), width: 40, height: 18, anchor: "bot", color: rgb(70, 70, 70) });
-        drawRect({ pos: vec25(120, 217), width: 14, height: 45, anchor: "bot", color: rgb(90, 90, 90) });
+        if (this.showMinimap) {
+          const minimapSize = 220;
+          const margin = 12;
+          const minimapX = screenW - minimapSize - margin;
+          const minimapY = hudHeight + 5;
+          drawRect({
+            pos: vec25(minimapX, minimapY),
+            width: minimapSize,
+            height: minimapSize,
+            color: BLACK,
+            opacity: 0.75
+          });
+          const gridH = grid.length;
+          const gridW = grid[0] ? grid[0].length : 0;
+          if (gridW > 0 && gridH > 0) {
+            const cellW = minimapSize / gridW;
+            const cellH = minimapSize / gridH;
+            for (let y = 0; y < gridH; y++) {
+              for (let x = 0; x < gridW; x++) {
+                const ch = grid[y][x];
+                let col;
+                if (ch === "#") {
+                  col = rgb(120, 60, 60);
+                } else if (ch === "L") {
+                  col = rgb(255, 180, 0);
+                } else {
+                  col = rgb(80, 80, 80);
+                }
+                drawRect({
+                  pos: vec25(
+                    minimapX + x * cellW,
+                    minimapY + y * cellH
+                  ),
+                  width: cellW,
+                  height: cellH,
+                  color: col
+                });
+              }
+            }
+            const gx = Math.floor(this.pos.x / 16);
+            const gy = Math.floor(this.pos.y / 16);
+            if (gx >= 0 && gx < gridW && gy >= 0 && gy < gridH) {
+              drawRect({
+                pos: vec25(
+                  minimapX + gx * cellW,
+                  minimapY + gy * cellH
+                ),
+                width: cellW,
+                height: cellH,
+                color: rgb(0, 255, 0)
+              });
+            }
+            for (const spawn of ENEMY_SPAWNS) {
+              const ePos = spawn.pos || spawn;
+              const ex = Math.floor(ePos.x / 16);
+              const ey = Math.floor(ePos.y / 16);
+              if (ex >= 0 && ex < gridW && ey >= 0 && ey < gridH) {
+                drawRect({
+                  pos: vec25(
+                    minimapX + ex * cellW,
+                    minimapY + ey * cellH
+                  ),
+                  width: cellW,
+                  height: cellH,
+                  color: rgb(255, 50, 50)
+                });
+              }
+            }
+            drawRect({
+              pos: vec25(minimapX, minimapY),
+              width: minimapSize,
+              height: minimapSize,
+              color: WHITE,
+              opacity: 0.8,
+              fill: false,
+              stroke: 2
+            });
+            drawText({
+              text: "MAP",
+              pos: vec25(minimapX + 4, minimapY + 4),
+              size: 10,
+              color: WHITE,
+              opacity: 0.9
+            });
+          }
+        }
+        const bob = Math.sin(time() * 8) * 2;
+        ;
+        const gunX = cx;
+        const gunY = screenH + 20 + bob;
+        drawRect({
+          pos: vec25(gunX, gunY - 10),
+          width: 130,
+          height: 70,
+          anchor: "bot",
+          color: rgb(55, 55, 55)
+        });
+        drawRect({
+          pos: vec25(gunX, gunY - 70),
+          width: 85,
+          height: 80,
+          anchor: "bot",
+          color: rgb(80, 80, 80)
+        });
+        drawRect({
+          pos: vec25(gunX, gunY - 130),
+          width: 45,
+          height: 80,
+          anchor: "bot",
+          color: rgb(105, 105, 105)
+        });
+        drawRect({
+          pos: vec25(gunX, gunY - 130),
+          width: 30,
+          height: 70,
+          anchor: "bot",
+          color: rgb(125, 125, 125)
+        });
+        drawRect({
+          pos: vec25(gunX, gunY - 175),
+          width: 50,
+          height: 12,
+          anchor: "bot",
+          color: rgb(25, 25, 25)
+        });
+        drawRect({
+          pos: vec25(gunX - 12, gunY - 190),
+          width: 7,
+          height: 18,
+          anchor: "bot",
+          color: rgb(30, 30, 30)
+        });
+        drawRect({
+          pos: vec25(gunX + 12, gunY - 190),
+          width: 7,
+          height: 18,
+          anchor: "bot",
+          color: rgb(30, 30, 30)
+        });
+        drawRect({
+          pos: vec25(gunX, gunY - 190),
+          width: 32,
+          height: 4,
+          anchor: "bot",
+          color: rgb(20, 20, 20)
+        });
         if (this.swordSwing > 0) {
           const swingT = 1 - this.swordSwing / 0.2;
           const angleDeg = lerp(-60, 60, swingT);
           pushTransform();
-          pushTranslate(vec25(120, 150));
+          pushTranslate(vec25(cx, cy + 30));
           pushRotate(angleDeg);
-          drawLine({ p1: vec25(0, 0), p2: vec25(0, -90), width: 6, color: WHITE });
+          drawLine({
+            p1: vec25(0, 0),
+            p2: vec25(0, -90),
+            width: 6,
+            color: WHITE
+          });
           popTransform();
         }
-        drawLine({ p1: vec25(114, 120), p2: vec25(126, 120), width: 1, color: WHITE });
-        drawLine({ p1: vec25(120, 114), p2: vec25(120, 126), width: 1, color: WHITE });
-        drawRect({ pos: vec25(0, 0), width: 240, height: 50, color: BLACK, opacity: 0.5 });
-        drawText({ text: `HP ${Math.max(0, this.hp)}`, pos: vec25(4, 2), size: 10, color: WHITE });
-        drawText({ text: `Kills ${this.score}/${ENEMY_SPAWNS.length}`, pos: vec25(140, 2), size: 10, color: WHITE });
-        drawText({ text: `Weapon: ${this.currentWeapon} (1=sword 2=gun)`, pos: vec25(4, 15), size: 9, color: WHITE });
-        const owned = Object.keys(this.weapons).filter((id) => this.weapons[id]);
-        drawText({ text: `Inventory: ${owned.join(", ") || "none"}`, pos: vec25(4, 27), size: 9, color: WHITE });
-        drawText({ text: `Floor ${currentFloor}/${MAX_FLOORS}  Crystals: ${crystalsCollected}/${CRYSTALS_PER_FLOOR}`, pos: vec25(4, 39), size: 9, color: rgb(80, 220, 255) });
+        drawLine({
+          p1: vec25(cx - 6, cy),
+          p2: vec25(cx + 6, cy),
+          width: 1,
+          color: WHITE
+        });
+        drawLine({
+          p1: vec25(cx, cy - 6),
+          p2: vec25(cx, cy + 6),
+          width: 1,
+          color: WHITE
+        });
+        drawRect({
+          pos: vec25(0, 0),
+          width: screenW,
+          height: hudHeight,
+          color: BLACK,
+          opacity: 0.6
+        });
+        drawText({
+          text: `HP ${Math.round(Math.max(0, this.hp))}`,
+          pos: vec25(20, 12),
+          size: 18,
+          color: WHITE
+        });
+        drawText({
+          text: `Kills ${this.score}/${ENEMY_SPAWNS.length}`,
+          pos: vec25(screenW / 2, 12),
+          anchor: "center",
+          size: 18,
+          color: WHITE
+        });
+        drawText({
+          text: `Weapon: ${this.currentWeapon} (1=sword 2=gun)`,
+          pos: vec25(4, 15),
+          size: 0,
+          opacity: 0,
+          color: WHITE
+        });
+        const owned = Object.keys(this.weapons).filter(
+          (id) => this.weapons[id]
+        );
+        drawText({
+          text: `Inventory: ${owned.join(", ") || "none"}`,
+          pos: vec25(4, 27),
+          size: 0,
+          opacity: 0,
+          color: WHITE
+        });
+        drawText({
+          text: `Floor ${currentFloor}/${MAX_FLOORS}  Crystals ${crystalsCollected}/${CRYSTALS_PER_FLOOR}`,
+          pos: vec25(screenW - 20, 12),
+          anchor: "right",
+          size: 16,
+          color: rgb(80, 220, 255)
+        });
         if (this.pickupMessage && this.pickupMessageTimer > 0) {
-          drawRect({ pos: vec25(120, 44), width: 120, height: 16, anchor: "top", color: BLACK, opacity: 0.6 });
-          drawText({ text: this.pickupMessage, pos: vec25(120, 52), size: 9, anchor: "center", color: rgb(255, 210, 60) });
+          drawRect({
+            pos: vec25(cx, 44),
+            width: 120,
+            height: 16,
+            anchor: "top",
+            color: BLACK,
+            opacity: 0.6
+          });
+          drawText({
+            text: this.pickupMessage,
+            pos: vec25(cx, 52),
+            size: 14,
+            anchor: "center",
+            color: rgb(255, 210, 60)
+          });
         }
         if (this.wonRun) {
-          drawRect({ width: 240, height: 240, color: BLACK, opacity: 0.6 });
-          drawText({ text: "YOU WIN!", pos: vec25(120, 100), size: 16, anchor: "center", color: rgb(80, 220, 255) });
-          drawText({ text: `All ${MAX_FLOORS} floors cleared`, pos: vec25(120, 120), size: 9, anchor: "center", color: WHITE });
-          drawText({ text: "Enter = Neustart", pos: vec25(120, 138), size: 10, anchor: "center", color: WHITE });
+          drawRect({
+            width: screenW,
+            height: screenH,
+            color: BLACK,
+            opacity: 0.6
+          });
+          drawText({
+            text: "YOU WIN!",
+            pos: vec25(cx, cy - 20),
+            size: 16,
+            anchor: "center",
+            color: rgb(80, 220, 255)
+          });
+          drawText({
+            text: `All ${MAX_FLOORS} floors cleared`,
+            pos: vec25(cx, cy),
+            size: 9,
+            anchor: "center",
+            color: WHITE
+          });
+          drawText({
+            text: "Enter = Neustart",
+            pos: vec25(cx, cy + 18),
+            size: 10,
+            anchor: "center",
+            color: WHITE
+          });
         } else if (this.gameOver) {
-          drawRect({ width: 240, height: 240, color: BLACK, opacity: 0.6 });
-          drawText({ text: "GAME OVER", pos: vec25(120, 110), size: 16, anchor: "center", color: RED2 });
-          drawText({ text: "Enter = Neustart", pos: vec25(120, 132), size: 10, anchor: "center", color: WHITE });
+          drawRect({
+            width: screenW,
+            height: screenH,
+            color: BLACK,
+            opacity: 0.6
+          });
+          drawText({
+            text: "GAME OVER",
+            pos: vec25(cx, cy - 10),
+            size: 16,
+            anchor: "center",
+            color: RED2
+          });
+          drawText({
+            text: "Enter = Neustart",
+            pos: vec25(cx, cy + 12),
+            size: 10,
+            anchor: "center",
+            color: WHITE
+          });
         } else if (this.score >= ENEMY_SPAWNS.length) {
-          drawRect({ width: 240, height: 240, color: BLACK, opacity: 0.6 });
-          drawText({ text: "GESCHAFFT!", pos: vec25(120, 110), size: 16, anchor: "center", color: rgb(120, 255, 120) });
-          drawText({ text: "Enter = Neustart", pos: vec25(120, 132), size: 10, anchor: "center", color: WHITE });
+          drawRect({
+            width: screenW,
+            height: screenH,
+            color: BLACK,
+            opacity: 0.6
+          });
+          drawText({
+            text: "GESCHAFFT!",
+            pos: vec25(cx, cy - 10),
+            size: 16,
+            anchor: "center",
+            color: rgb(120, 255, 120)
+          });
+          drawText({
+            text: "Enter = Neustart",
+            pos: vec25(cx, cy + 12),
+            size: 10,
+            anchor: "center",
+            color: WHITE
+          });
         }
         popTransform();
       },
-      focalLength: 40,
-      fov: 10,
+      focalLength: 70,
+      fov: 35,
       hp: 100,
       score: 0,
       gameOver: false,
       shootCooldown: 0,
-      muzzleFlash: 0,
-      swordCooldown: 0,
-      swordSwing: 0,
+      muzzleFlash: 1,
       pickupMessage: "",
       pickupMessageTimer: 0,
-      weapons: { sword: true, gun: false },
-      currentWeapon: "sword",
+      weapons: { gun: true },
+      currentWeapon: "gun",
       wonRun: false,
-      floorComplete: false
+      floorComplete: false,
+      showMinimap: true
     }
   ]);
 }
@@ -1283,7 +1647,7 @@ var {
   outline,
   color: color5,
   text,
-  time,
+  time: time2,
   hsl2rgb,
   vec2: vec28,
   go: go3,
@@ -1331,7 +1695,7 @@ scene3("title", () => {
       color5(0, 0, 0)
     ]);
     btn.onHoverUpdate(() => {
-      const t = time() * 10;
+      const t = time2() * 10;
       btn.color = hsl2rgb(t / 10 % 1, 0.6, 0.7);
       btn.scale = vec28(1.2);
       setCursor("pointer");
@@ -1363,7 +1727,7 @@ var {
   outline: outline2,
   color: color6,
   text: text2,
-  time: time2,
+  time: time3,
   hsl2rgb: hsl2rgb2,
   vec2: vec29,
   go: go4,
@@ -1400,7 +1764,7 @@ scene4("options", () => {
     color6(0, 0, 0)
   ]);
   btn.onHoverUpdate(() => {
-    const t = time2() * 10;
+    const t = time3() * 10;
     btn.color = hsl2rgb2(t / 10 % 1, 0.6, 0.7);
     btn.scale = vec29(1.1);
     setCursor2("pointer");
