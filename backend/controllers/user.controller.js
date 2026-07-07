@@ -4,14 +4,15 @@ exports.getUsers = async (req, res) => {
   try {
     const [rows] = await db.query(
       `
-      SELECT
-        user_id,
-        username,
-        email,
-        role,
-        profile_image_path
-      FROM users
-      ORDER BY username ASC
+SELECT
+    user_id,
+    username,
+    email,
+    role,
+    profile_image_path
+FROM users
+WHERE role != 'admin'
+ORDER BY username ASC;
       `
     );
 

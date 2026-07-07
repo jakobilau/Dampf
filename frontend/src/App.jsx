@@ -5,6 +5,7 @@ import Dashboard from "./Dashboard";
 import Profile from "./Profile";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import LibraryPage from "./Library";
+import Admin from "./Admin";
 
 function App() {
   return (
@@ -18,6 +19,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Admin />
           </ProtectedRoute>
         }
       />
