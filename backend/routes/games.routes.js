@@ -9,12 +9,7 @@ router.get("/", controller.getGames);
 router.get("/:id", controller.getGame);
 
 
-// DELETE GAME (admin only)
-router.delete(
-  "/:id",
-  auth,
-  requireRole("admin"),
-  controller.deleteGame
-);
+
+router.delete("/:id", auth, requireRole("admin"), controller.deleteGame);
 
 module.exports = router;

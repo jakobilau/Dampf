@@ -37,13 +37,13 @@ exports.sendMessage = async (req, res) => {
       [senderId, receiverId, content]
     );
 
-const message = {
-  message_id: result.insertId,
-  sender_id: senderId,
-  receiver_id: receiverId,
-  content,
-  created_at: new Date().toISOString(),
-};
+    const message = {
+      message_id: result.insertId,
+      sender_id: senderId,
+      receiver_id: receiverId,
+      content,
+      created_at: new Date().toISOString(),
+    };
 
     const onlineUsers = socketModule.getOnlineUsers();
     const io = socketModule.getIO();
@@ -51,8 +51,6 @@ const message = {
     const receiverSocket = onlineUsers?.get(Number(receiverId));
 
     if (receiverSocket) {
-    console.log("📤 EMIT new_message to socket:", receiverSocket);
-
       io.to(receiverSocket).emit("new_message", message);
     }
 

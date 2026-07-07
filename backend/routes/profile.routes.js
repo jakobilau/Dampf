@@ -22,12 +22,7 @@ router.get("/:id", controller.getProfile);
 
 router.patch("/", auth, controller.updateProfile);
 
-router.patch(
-    "/avatar",
-    auth,
-    upload.single("avatar"),
-    controller.updateAvatar
-);
+router.patch("/avatar", auth, upload.single("avatar"), controller.updateAvatar);
 
 module.exports = router;
 

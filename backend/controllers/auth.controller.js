@@ -4,9 +4,6 @@ const jwt = require("jsonwebtoken");
 
 const saltRounds = 10;
 
-/**
- * REGISTER
- */
 exports.register = async (req, res) => {
   const { username, password, email } = req.body;
 
@@ -25,10 +22,10 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: "User exists" });
     }
 
-    // hash password
+
     const hash = await bcrypt.hash(password, saltRounds);
 
-    // 🔥 HIER IST DEIN INSERT (WICHTIG)
+  
     await db.query(
       "INSERT INTO users (username, password_hash, email, role) VALUES (?, ?, ?, ?)",
       [username, hash, email, "user"]
@@ -41,15 +38,12 @@ exports.register = async (req, res) => {
   }
 };
 
-/**
- * LOGIN
- */
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: "Missing credentials" });
+      return res.status(400).json({ message: "Missing input" });
     }
 
     const [rows] = await db.query(
@@ -58,7 +52,7 @@ exports.login = async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid input" });
     }
 
     const user = rows[0];
@@ -69,7 +63,7 @@ exports.login = async (req, res) => {
     );
 
     if (!validPassword) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid input" });
     }
 
     const token = jwt.sign(
@@ -104,9 +98,6 @@ exports.login = async (req, res) => {
   }
 };
 
-/**
- * LOGOUT
- */
 exports.logout = async (req, res) => {
   try {
     res.clearCookie("token", {
@@ -123,9 +114,6 @@ exports.logout = async (req, res) => {
   }
 };
 
-/**
- * ME (current user)
- */
 exports.me = async (req, res) => {
   try {
     const [rows] = await db.query(

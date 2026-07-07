@@ -17,7 +17,6 @@ export function SocketProvider({ children }) {
         });
 
         newSocket.on("connect", () => {
-            console.log("🟢 SOCKET CONNECTED:", newSocket.id);
             newSocket.emit("register", user.user_id);
         });
 
